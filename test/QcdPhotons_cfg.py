@@ -8,7 +8,7 @@ process.load("DQMServices.Components.DQMEnvironment_cfi")
 process.dqmSaver.workflow = cms.untracked.string('/Physics/QcdPhotons/PhotonJet')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(1000)
 )
 
 process.source = cms.Source("PoolSource",
@@ -22,9 +22,11 @@ process.source = cms.Source("PoolSource",
 
 # DQM monitor module for BPhysics: onia resonances
 process.QcdPhotonsAnalyzer = cms.EDAnalyzer("QcdPhotons",
-                            photonCollection  = cms.InputTag("photons"),
-                            caloJetCollection = cms.InputTag("sisCone5CaloJets")
-#                           caloJetCollection = cms.InputTag("L2L3CorJetSC5Calo")
+                            triggerPathToPass        = cms.string("HLT_Photon15_L1R"),
+                            triggerResultsCollection = cms.InputTag("TriggerResults", "", "HLT"),
+                            photonCollection         = cms.InputTag("photons"),
+                            caloJetCollection        = cms.InputTag("sisCone5CaloJets"),
+#                           caloJetCollection        = cms.InputTag("L2L3CorJetSC5Calo"),
 )
 
 process.p = cms.Path(process.QcdPhotonsAnalyzer+process.dqmSaver)
