@@ -1,11 +1,11 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("QcdPhotonsPhotonJetDQM")
+process = cms.Process("QcdPhotonsDQM")
 
 process.load("DQMServices.Core.DQM_cfg")
 process.load("DQMServices.Components.DQMEnvironment_cfi")
 
-process.dqmSaver.workflow = cms.untracked.string('/Physics/QcdPhotons_PhotonJet_DQM/PhotonJet')
+process.dqmSaver.workflow = cms.untracked.string('/My/Test/DataSet')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
@@ -21,7 +21,7 @@ process.source = cms.Source("PoolSource",
 )
 
 # DQM monitor module for QCD-Photons: Photon+Jet
-process.QcdPhotonsAnalyzer = cms.EDAnalyzer("QcdPhotonsPhotonJetDQM",
+process.QcdPhotonsAnalyzer = cms.EDAnalyzer("QcdPhotonsDQM",
                             triggerPathToPass        = cms.string("HLT_Photon15_L1R"),
                             triggerResultsCollection = cms.InputTag("TriggerResults", "", "HLT"),
                             photonCollection         = cms.InputTag("photons"),
