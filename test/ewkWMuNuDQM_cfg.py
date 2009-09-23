@@ -7,7 +7,7 @@ process.load("DQMServices.Core.DQM_cfg")
 process.load("DQMServices.Components.DQMEnvironment_cfi")
 process.DQM.collectorHost = ''
 
-process.dqmSaver.workflow = cms.untracked.string('/My/Test/DataSet')
+process.dqmSaver.workflow = cms.untracked.string('/Physics/EWK/WMuNu')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
@@ -35,10 +35,14 @@ process.source = cms.Source("PoolSource",
          'file:/data4/Wmunu-Summer09-MC_31X_V2_preproduction_311-v1/0011/F4C91F77-766D-DE11-981F-00163E1124E7.root'
     )
 )
-#process.MessageLogger = cms.Service("MessageLogger",
-#    destinations = cms.untracked.vstring('detailedInfo',
-#        'cout')
-#)
+process.MessageLogger = cms.Service("MessageLogger",
+    destinations = cms.untracked.vstring('detailedInfo'),
+    detailedInfo = cms.untracked.PSet(
+            default = cms.untracked.PSet( limit = cms.untracked.int32(10) ),
+            threshold = cms.untracked.string('INFO')
+            #threshold = cms.untracked.string('ERROR')
+    )
+)
 #process.ana = cms.EDAnalyzer("EventContentAnalyzer")
 process.p = cms.Path(process.ewkWMuNuDQM+process.dqmSaver)
 
