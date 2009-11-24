@@ -1,7 +1,7 @@
 from DQM.Physics.validationTemplate_cfg import *
 
 ## add jet/MET corrections
-process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer09_7TeV_cff")
+process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer09_cff")
 process.prefer("L2L3JetCorrectorAK5Calo")
 
 ## define process
@@ -14,6 +14,11 @@ from JetMETCorrections.Type1MET.MetType1Corrections_cff import *
 
 process.load("JetMETCorrections.Type1MET.MetType1Corrections_cff")
 process.load("JetMETCorrections.Type1MET.MetMuonCorrections_cff")
+
+process.metJESCorAK5CaloJet  = metJESCorIC5CaloJet.clone()
+process.metJESCorAK5CaloJet.inputUncorJetsLabel = "antikt5CaloJets"
+process.metJESCorAK5CaloJet.inputUncorMetLabel  = "corMetGlobalMuons"
+process.metJESCorAK5CaloJet.corrector = "L2L3JetCorrectorAK5Calo"
 
 process.leptonJetsChecker.labelMETs = cms.InputTag('metJESCorAK5CaloJet')
 

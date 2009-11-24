@@ -1,12 +1,12 @@
 from DQM.Physics.validationTemplate_cfg import *
 
 ## add jet corrections
-process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer09_7TeV_cff")
+process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer09_cff")
 process.prefer("L2L3JetCorrectorAK5Calo") 
 
 ## define process
 process.load("DQM.Physics.leptonJetsChecker_cfi")
-process.load("DQM.Physics.dileptonsJetsChecker_cfi")
+process.load("DQM.Physics.dileptonJetsChecker_cfi")
 
 ## configure full-leptonic channels
 process.leptonJetsChecker.verbose      = False
@@ -23,13 +23,18 @@ from JetMETCorrections.Type1MET.MetType1Corrections_cff import *
 process.load("JetMETCorrections.Type1MET.MetType1Corrections_cff")
 process.load("JetMETCorrections.Type1MET.MetMuonCorrections_cff")
 
+process.metJESCorAK5CaloJet = metJESCorIC5CaloJet.clone()
+process.metJESCorAK5CaloJet.inputUncorJetsLabel = "antikt5CaloJets"
+process.metJESCorAK5CaloJet.inputUncorMetLabel  = "corMetGlobalMuons"
+process.metJESCorAK5CaloJet.corrector = "L2L3JetCorrectorAK5Calo"
+
 process.diLeptonsCheckerDiel.labelMETs = cms.InputTag('metJESCorAK5CaloJet')
 process.diLeptonsCheckerDimu.labelMETs = cms.InputTag('metJESCorAK5CaloJet')
 process.diLeptonsCheckerElmu.labelMETs = cms.InputTag('metJESCorAK5CaloJet')
 	
 process.p = cms.Path(
-  corMetGlobalMuons* 
-  metJESCorAK5CaloJet*
+  process.corMetGlobalMuons* 
+  process.metJESCorAK5CaloJet*
   process.diLeptonsCheckerDimu*
   process.diLeptonsCheckerDiel*
   process.diLeptonsCheckerElmu
