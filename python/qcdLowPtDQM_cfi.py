@@ -1,4 +1,4 @@
-# $Id: qcdLowPtDQM_cfi.py,v 1.6 2009/11/19 22:32:41 loizides Exp $
+# $Id: qcdLowPtDQM_cfi.py,v 1.9 2009/11/29 11:20:45 loizides Exp $
 
 import FWCore.ParameterSet.Config as cms
 
@@ -23,17 +23,17 @@ myRecoSeq = cms.Sequence(myRecoSeq1 * myRecoSeq2)
 
 QcdLowPtDQM = cms.EDAnalyzer("QcdLowPtDQM",
     hltTrgNames  = cms.untracked.vstring(
-    'HLT_ZeroBias'
-#    'HLT_MinBias',
     'HLT_MinBiasBSC',
     'HLT_MinBiasBSC_OR',
     'HLT_MinBiasEcal',
     'HLT_MinBiasHcal',
     'HLT_MinBiasPixel_SingleTrack',
-    'HLT_HFThreshold',
+    'HLT_ZeroBiasPixel_SingleTrack',
+    'HLT_L1Tech_HCAL_HF_coincidence_PM',
+    'HLT_L1_BPTX',
+#    'HLT_HFThreshold3',
 #    'HLT_Activity_Ecal',
-    'HLT_Activity_EcalREM',
-    'HLT_Activity_PixelClusters',
+#    'HLT_Activity_PixelClusters',
     ),
                              
     verbose = cms.untracked.int32(3)
