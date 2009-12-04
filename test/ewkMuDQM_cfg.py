@@ -1,13 +1,13 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("EwkDQM")
-process.load("DQM.Physics.ewkWMuNuDQM_cfi")
+process.load("DQM.Physics.ewkMuDQM_cfi")
 
 process.load("DQMServices.Core.DQM_cfg")
 process.load("DQMServices.Components.DQMEnvironment_cfi")
 process.DQM.collectorHost = ''
 
-process.dqmSaver.workflow = cms.untracked.string('/Physics/EWK/WMuNu')
+process.dqmSaver.workflow = cms.untracked.string('/Physics/EWK/Muon')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
@@ -32,7 +32,9 @@ process.source = cms.Source("PoolSource",
 #        '/store/relval/CMSSW_3_1_1/RelValWM/GEN-SIM-RECO/STARTUP31X_V1-v2/0002/EA593FE4-E26B-DE11-8173-001D09F2438A.root',
 #        '/store/relval/CMSSW_3_1_1/RelValWM/GEN-SIM-RECO/STARTUP31X_V1-v2/0002/9270F55B-E26B-DE11-994E-001D09F2AF1E.root',
 #        '/store/relval/CMSSW_3_1_1/RelValWM/GEN-SIM-RECO/STARTUP31X_V1-v2/0002/8E5D0675-E36B-DE11-8F71-001D09F242EF.root'
-         'file:/data4/Wmunu-Summer09-MC_31X_V2_preproduction_311-v1/0011/F4C91F77-766D-DE11-981F-00163E1124E7.root'
+#         'file:/ciet3a/data4/Wmunu-Summer09-MC_31X_V2_preproduction_311-v1/0011/F4C91F77-766D-DE11-981F-00163E1124E7.root'
+         'file:/ciet3a/data4/MinBias900GeV_MuFiltered/MinBias900GeV_MuFiltered_1.root'
+
     )
 )
 process.MessageLogger = cms.Service("MessageLogger",
@@ -44,5 +46,5 @@ process.MessageLogger = cms.Service("MessageLogger",
     )
 )
 #process.ana = cms.EDAnalyzer("EventContentAnalyzer")
-process.p = cms.Path(process.ewkWMuNuDQM+process.dqmSaver)
+process.p = cms.Path(process.ewkMuDQM+process.dqmSaver)
 
