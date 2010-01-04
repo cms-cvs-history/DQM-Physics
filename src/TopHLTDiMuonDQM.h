@@ -4,7 +4,7 @@
 /*
  *  DQM HLT Dimuon Test Client
  *
- *  $Date: 2008/10/16 16:43:28 $
+ *  $Date: 2009/07/29 13:05:04 $
  *  $Revision: 1.2 $
  *  \author  M. Vander Donckt CERN
  *   
@@ -62,7 +62,7 @@ class TopHLTDiMuonDQM : public edm::EDAnalyzer {
 
  protected:   
 
-  void beginJob(const edm::EventSetup& c);
+  void beginJob();
   void beginRun(const edm::Run& r, const edm::EventSetup& c);
   void analyze(const edm::Event& e, const edm::EventSetup& c);
   void beginLuminosityBlock(const edm::LuminosityBlock& lumiSeg, const edm::EventSetup& context);

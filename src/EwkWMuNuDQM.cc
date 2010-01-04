@@ -76,7 +76,7 @@ void EwkWMuNuDQM::beginRun(const Run& r, const EventSetup&) {
 }
 
 
-void EwkWMuNuDQM::beginJob(const EventSetup &) {
+void EwkWMuNuDQM::beginJob() {
       theDbe = Service<DQMStore>().operator->();
       theDbe->setCurrentFolder("Physics/EwkWMuNuDQM");
 

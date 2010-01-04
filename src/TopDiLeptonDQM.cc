@@ -1,6 +1,6 @@
 /*
- *  $Date: 2009/07/29 13:05:04 $
- *  $Revision: 1.2 $
+ *  $Date: 2009/07/29 21:10:31 $
+ *  $Revision: 1.3 $
  *  \author M. Marienfeld - DESY Hamburg
  */
 
@@ -43,7 +43,7 @@ void TopDiLeptonDQM::initialize() {
 }
 
 
-void TopDiLeptonDQM::beginJob(const edm::EventSetup& evt) {
+void TopDiLeptonDQM::beginJob() {
 
   dbe_ = Service<DQMStore>().operator->();
 
