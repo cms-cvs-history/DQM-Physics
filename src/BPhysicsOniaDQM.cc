@@ -1,9 +1,9 @@
 /*
  *  See header file for a description of this class.
  *
- *  $Date: 2009/06/26 10:18:36 $
- *  $Revision: 1.2 $
- *  \author S. Bolognesi, Eric - CERN
+ *  $Date: 2009/12/14 15:07:55 $
+ *  $Revision: 1.4 $
+ *  \author S. Bolognesi, Erik - CERN
  */
 
 #include "DQM/Physics/src/BPhysicsOniaDQM.h"
@@ -18,6 +18,7 @@
 
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h" 
+#include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 
@@ -55,7 +56,7 @@ BPhysicsOniaDQM::~BPhysicsOniaDQM() {
 }
 
 
-void BPhysicsOniaDQM::beginJob(EventSetup const& iSetup) {
+void BPhysicsOniaDQM::beginJob() {
  
   metname = "oniaAnalyzer";
 
@@ -63,12 +64,12 @@ void BPhysicsOniaDQM::beginJob(EventSetup const& iSetup) {
   theDbe = Service<DQMStore>().operator->();
   if(theDbe!=NULL){
     theDbe->setCurrentFolder("Physics/BPhysics");  // Use folder with name of PAG
-    global_background = theDbe->book1D("global_background", "global background", 750, 0, 15);
-    diMuonMass_global = theDbe->book1D("diMuonMass_global", "dimuon mass", 750, 0, 15);
-    tracker_background = theDbe->book1D("tracker_background", "tracker background", 750, 0, 15);
-    diMuonMass_tracker = theDbe->book1D("diMuonMass_tracker", "dimuon mass", 750, 0, 15);
-    standalone_background = theDbe->book1D("standalone_background", "standalone background", 500, 0, 15);
-    diMuonMass_standalone = theDbe->book1D("diMuonMass_standalone", "dimuon mass", 500, 0, 15);
+    global_background = theDbe->book1D("global_background", "Same-sign global-global dimuon mass", 750, 0, 15);
+    diMuonMass_global = theDbe->book1D("diMuonMass_global", "Opposite-sign global-global dimuon mass", 750, 0, 15);
+    tracker_background = theDbe->book1D("tracker_background", "Same-sign tracker-tracker (arbitrated) dimuon mass", 750, 0, 15);
+    diMuonMass_tracker = theDbe->book1D("diMuonMass_tracker", "Opposite-sign tracker-tracker (arbitrated) dimuon mass", 750, 0, 15);
+    standalone_background = theDbe->book1D("standalone_background", "Same-sign standalone-standalone dimuon mass", 500, 0, 15);
+    diMuonMass_standalone = theDbe->book1D("diMuonMass_standalone", "Opposite-sign standalone-standalone dimuon mass", 500, 0, 15);
   }
 
 }
@@ -108,7 +109,9 @@ void BPhysicsOniaDQM::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    }
 
 	  }
-	  if(recoMu1->isStandAloneMuon() && recoMu2->isStandAloneMuon()){
+	  if(recoMu1->isStandAloneMuon() && recoMu2->isStandAloneMuon() &&
+	     fabs(recoMu1->outerTrack()->d0()) < 5 && fabs(recoMu1->outerTrack()->dz()) < 30 &&
+	     fabs(recoMu2->outerTrack()->d0()) < 5 && fabs(recoMu2->outerTrack()->dz()) < 30){
 	    math::XYZVector vec1 = recoMu1->outerTrack()->momentum();
 	    math::XYZVector vec2 = recoMu2->outerTrack()->momentum();
 	    float massJPsi = computeMass(vec1,vec2);
@@ -124,7 +127,9 @@ void BPhysicsOniaDQM::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	      }
 	    }
 	  }
-	  if(recoMu1->isTrackerMuon() && recoMu2->isTrackerMuon()){
+	  if(recoMu1->isTrackerMuon() && recoMu2->isTrackerMuon() &&
+	     muon::isGoodMuon(*recoMu1, muon::TrackerMuonArbitrated) &&
+	     muon::isGoodMuon(*recoMu2, muon::TrackerMuonArbitrated)){
 	    math::XYZVector vec1 = recoMu1->innerTrack()->momentum();
 	    math::XYZVector vec2 = recoMu2->innerTrack()->momentum();
 	    float massJPsi = computeMass(vec1,vec2);
