@@ -10,7 +10,6 @@ from DQM.Physics.qcdHighPtDQM_cfi import *
 from DQM.Physics.topDiLeptonDQM_cfi import *
 from DQM.Physics.ewkMuLumiMonitorDQM_cfi import *
 from DQM.Physics.ewkTauDQM_cfi import *
-from DQM.Physics.susyDQM_cfi import *
 
 dqmPhysics = cms.Sequence(bphysicsOniaDQM
 			 *ewkDQM
@@ -21,6 +20,5 @@ dqmPhysics = cms.Sequence(bphysicsOniaDQM
                          *qcdHighPtDQM
 			 *topDiLeptonDQM
                          *ewkTauDQM
-                         *susyDQM
 			 )
 
