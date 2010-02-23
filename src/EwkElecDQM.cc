@@ -45,8 +45,7 @@ EwkElecDQM::EwkElecDQM( const ParameterSet & cfg ) :
 
       // Main cuts 
       //      muonTrig_(cfg.getUntrackedParameter<std::string> ("MuonTrig", "HLT_Mu9")),
-      //elecTrig_(cfg.getUntrackedParameter<std::vector< std::string > >("ElecTrig", "HLT_Ele10_SW_L1R")), 
-      elecTrig_(cfg.getUntrackedParameter<std::vector< std::string > >("ElecTrig")), 
+      elecTrig_(cfg.getUntrackedParameter<std::string> ("ElecTrig", "HLT_Ele10_SW_L1R")), // NOT HLT_Ele10_LW_L1R ???
       //      ptCut_(cfg.getUntrackedParameter<double>("PtCut", 25.)),
       ptCut_(cfg.getUntrackedParameter<double>("PtCut", 10.)),
       //      etaCut_(cfg.getUntrackedParameter<double>("EtaCut", 2.1)),
@@ -191,7 +190,7 @@ void EwkElecDQM::init_histograms() {
             hcalisoendcap_before_ = theDbe->book1D("HCALISOENDCAP_BEFORECUTS",chtitle,50,0.,50.);
             hcalisoendcap_after_ = theDbe->book1D("HCALISOENDCAP_LASTCUT",chtitle,50,0.,50.);
 
-            snprintf(chtitle, 255, "Absolute electron track isolation variable (barrel) [GeV]");
+            snprintf(chtitle, 255, "Absolute electron ECAL isolation variable (barrel) [GeV]");
             trkisobarrel_before_ = theDbe->book1D("TRKISOBARREL_BEFORECUTS",chtitle,50,0.,50.);
             trkisobarrel_after_ = theDbe->book1D("TRKISOBARREL_LASTCUT",chtitle,50,0.,50.);
 
@@ -203,8 +202,7 @@ void EwkElecDQM::init_histograms() {
 //             trig_before_ = theDbe->book1D("TRIG_BEFORECUTS",chtitle,2,-0.5,1.5);
 //             trig_after_ = theDbe->book1D("TRIG_LASTCUT",chtitle,2,-0.5,1.5);
 
-            //snprintf(chtitle, 255, "Trigger response (bit %s)", elecTrig_.data());
-	    snprintf(chtitle, 255, "Trigger response"); // elecTrig_ is now a vector of strings!
+            snprintf(chtitle, 255, "Trigger response (bit %s)", elecTrig_.data());
             trig_before_ = theDbe->book1D("TRIG_BEFORECUTS",chtitle,2,-0.5,1.5);
             trig_after_ = theDbe->book1D("TRIG_LASTCUT",chtitle,2,-0.5,1.5);
 
@@ -425,25 +423,16 @@ void EwkElecDQM::analyze (const Event & ev, const EventSetup &) {
       if (triggerResults->accept(itrig1)) trigger_fired = true;
       */
       //suggested replacement: lm250909
-      for (unsigned int i=0; i<triggerResults->size(); i++) 
-	{
-	  std::string trigName = trigNames.triggerName(i);
-	  for (unsigned int j = 0; j < elecTrig_.size(); j++)
-	    {
-	      if ( trigName == elecTrig_.at(j) && triggerResults->accept(i)) 
-		{
-		  trigger_fired = true;
-		}
-	    }
-	}
+      for (unsigned int i=0; i<triggerResults->size(); i++) {
+        std::string trigName = trigNames.triggerName(i);
+	if ( trigName == elecTrig_ && triggerResults->accept(i)) 
+	  {
+	    trigger_fired = true;
+	  }
+      }
 
 
-      LogTrace("") << ">>> Trigger bit: " << trigger_fired << " for one of ( " ;
-      for (unsigned int k = 0; k < elecTrig_.size(); k++)
-	{
-	  LogTrace("") << elecTrig_.at(k) << " ";
-	}
-      LogTrace("") << ")";
+      LogTrace("") << ">>> Trigger bit: " << trigger_fired << " (" << elecTrig_ << ")";
       trig_before_->Fill(trigger_fired);
 
 //       // Loop to reject/control Z->mumu is done separately
