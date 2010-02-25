@@ -123,8 +123,6 @@ class TopSingleLeptonDQM : public edm::EDAnalyzer  {
   virtual void analyze(const edm::Event& event, const edm::EventSetup& setup);
     
  private:
-  /// check for trigger accept
-  //bool accept(const edm::TriggerResults& triggerTable) const;
   /// deduce object type from ParameterSet label, the label
   /// is expected to be of type 'objectType:selectionStep'
   std::string objectType(const std::string& label) { return label.substr(0, label.find(':')); };  
