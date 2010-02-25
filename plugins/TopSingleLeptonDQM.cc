@@ -135,7 +135,6 @@ namespace TopSingleLepton {
     }
     unsigned int idx=0;
     for(edm::View<reco::Jet>::const_iterator jet=jets.begin(); jet!=jets.end(); ++jet, ++idx){
-      std::cout << "3,," << idx << std::endl;
       if( idx<MAXJETS ){
 	// determine raw jet pt
 	double ptRaw = jet->pt();
@@ -190,6 +189,8 @@ namespace TopSingleLepton {
 	}
       }
     }
+    fill("muonMult_",    mult   );
+    fill("muonMultIso_", multIso);
   }
 
   void
@@ -218,6 +219,8 @@ namespace TopSingleLepton {
 	}
       }
     }
+    fill("elecMult_",    mult   );
+    fill("elecMultIso_", multIso);
   }
   
 }
