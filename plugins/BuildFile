@@ -1,4 +1,5 @@
 <use name=DQM/Physics>
+<use name=CommonTools/Utils>
 <library file=*.cc name=DQMPhysicsPlugins>
  <flags EDM_PLUGIN=1>
 </library>
