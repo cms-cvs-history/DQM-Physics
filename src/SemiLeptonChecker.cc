@@ -35,7 +35,8 @@ SemiLeptonChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, 
   TLorentzVector topPairP4;
   TLorentzVector hadTopP4;
   TLorentzVector lepTopP4;
-  
+  std::vector<double> vect_bdiscriminators;
+
   // Histograms related to Muon/Electron and Jets
   std::vector< TLorentzVector > vectorjets;
   double cutNgoodJets = jets.size();
@@ -50,6 +51,7 @@ SemiLeptonChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, 
     }
     jetP4.SetPxPyPzE(correctedJet.px(),correctedJet.py(),correctedJet.pz(),correctedJet.energy());
     vectorjets.push_back(jetP4);
+    vect_bdiscriminators.push_back(0.);//Dummy. Not using btagging for the moment
   }
   
   METP4.SetPxPyPzE(mets[0].px(),mets[0].py(),mets[0].pz(),mets[0].energy());
@@ -94,7 +96,7 @@ SemiLeptonChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, 
   }
   
   myCombi0_.SetLeptonicW( lepWP4 );
-  myCombi0_.FourJetsCombinations(vectorjets);
+  myCombi0_.FourJetsCombinations(vectorjets,vect_bdiscriminators);
   
   Combo bestCombo = myCombi0_.GetCombinationSumEt(0);
   
@@ -116,7 +118,7 @@ SemiLeptonChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, 
     myCombi1_.SetLeptonicW( lepWP4 );
     myCombi1_.UseMtopConstraint(true);
     myCombi1_.SetSigmas(0);
-    myCombi1_.FourJetsCombinations(vectorjets);
+    myCombi1_.FourJetsCombinations(vectorjets,vect_bdiscriminators);
 
     Combo bestCombo = myCombi1_.GetCombination(0);
     hadWP4 = bestCombo.GetHadW();
