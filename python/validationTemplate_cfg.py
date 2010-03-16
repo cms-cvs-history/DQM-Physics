@@ -17,12 +17,14 @@ process.load("DQMServices.Components.DQMEnvironment_cfi")
 ## source Input File
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(
   ## the following files are in for testing
-  '/store/relval/CMSSW_3_3_0/RelValTTbar/GEN-SIM-RECO/STARTUP31X_V8-v1/0001/3291E09D-67B7-DE11-9ED6-003048678C9A.root',
-  '/store/relval/CMSSW_3_3_0/RelValTTbar/GEN-SIM-RECO/STARTUP31X_V8-v1/0001/626F521F-66B7-DE11-8D68-003048679084.root',
-  '/store/relval/CMSSW_3_3_0/RelValTTbar/GEN-SIM-RECO/STARTUP31X_V8-v1/0001/7CFBE1E9-6FB7-DE11-9866-0018F3D09688.root',
-  '/store/relval/CMSSW_3_3_0/RelValTTbar/GEN-SIM-RECO/STARTUP31X_V8-v1/0002/08E5EBB7-72B7-DE11-A12F-001A92810A9A.root',
-  '/store/relval/CMSSW_3_3_0/RelValTTbar/GEN-SIM-RECO/STARTUP31X_V8-v1/0002/2C546D09-76B7-DE11-B46C-00304867920C.root',
-  '/store/relval/CMSSW_3_3_0/RelValTTbar/GEN-SIM-RECO/STARTUP31X_V8-v1/0002/304FA853-79B7-DE11-9AE7-001731EF61B4.root'
+        '/store/relval/CMSSW_3_4_2/RelValProdTTbar/GEN-SIM-RECO/MC_3XY_V15-v1/0011/FE3B3C36-B413-DF11-9F84-002618FDA216.root',
+        '/store/relval/CMSSW_3_4_2/RelValProdTTbar/GEN-SIM-RECO/MC_3XY_V15-v1/0010/EC6B5FD5-6013-DF11-9795-001BFCDBD100.root',
+        '/store/relval/CMSSW_3_4_2/RelValProdTTbar/GEN-SIM-RECO/MC_3XY_V15-v1/0010/AE53FEB0-5F13-DF11-956B-001A928116C0.root',
+        '/store/relval/CMSSW_3_4_2/RelValProdTTbar/GEN-SIM-RECO/MC_3XY_V15-v1/0010/3621BC47-6013-DF11-9376-001731AF6A7D.root',
+        '/store/relval/CMSSW_3_4_2/RelValProdTTbar/GEN-SIM-RECO/MC_3XY_V15-v1/0010/280BA505-6513-DF11-867B-001A92971BB2.root',
+        '/store/relval/CMSSW_3_4_2/RelValProdTTbar/GEN-SIM-RECO/MC_3XY_V15-v1/0010/222EAB18-6B13-DF11-97D3-001A92971AEC.root',
+        '/store/relval/CMSSW_3_4_2/RelValProdTTbar/GEN-SIM-RECO/MC_3XY_V15-v1/0010/166D53B0-6613-DF11-A4DC-0030486791C6.root'
+
   )
 )
 ## define maximal number of events to loop over
