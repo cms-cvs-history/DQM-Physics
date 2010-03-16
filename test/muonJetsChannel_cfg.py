@@ -35,7 +35,7 @@ process.leptonJetsChecker.PtThrElectronLoose     =  15.0   ##
 process.leptonJetsChecker.RelIsoThrElectronLoose =   0.2   ##
 
 process.p = cms.Path(
-  corMetGlobalMuons+
+  #corMetGlobalMuons+
   process.metJESCorAK5CaloJet+
   process.leptonJetsChecker+
   process.dqmEnv+

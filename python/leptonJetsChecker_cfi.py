@@ -48,10 +48,25 @@ leptonJetsChecker= cms.EDAnalyzer('LeptonJetsChecker',
 	EtaThrElectronLoose         = cms.double(2.5),
 	RelIsoThrElectronLoose      = cms.double(1.0),
 	electronIDLabelLoose        = cms.string('eidRobustLoose'),
+	
+	
 	includeBtagInfo             = cms.bool(False), # if true also fill the list of algos! If False the following two parameters are actually not parsed.
-        btaggingAlgoLabels          = cms.vstring(""),   # for example: btaggingAlgoLabels = cms.vstring("trackCountingHighPurBJetTag","trackCountingHighEffBJetTag","simpleSecondaryVertexBJetTag")                                 
+        btaggingAlgoLabels          = cms.vstring("trackCountingHighEffBJetTags",
+                                                      "trackCountingHighEffBJetTags",
+                                                      "simpleSecondaryVertexBJetTags",
+                                                      "softMuonBJetTags",
+						      "jetProbabilityBJetTags"),   # for example: btaggingAlgoLabels = cms.vstring("trackCountingHighPurBJetTag","trackCountingHighEffBJetTag","simpleSecondaryVertexBJetTag")                                 
         btaggingMatchDr             = cms.double(0.5), # match jet used for b-tagging to jet in jet collection                                  
-        
+        btaggingSelectors = cms.PSet(
+              taggers=cms.vstring("trackCountingHighEffBJetTags",
+                                  "simpleSecondaryVertexBJetTags",
+                                  "jetProbabilityBJetTags",
+                                  "softMuonBJetTags"),
+               cuts   =cms.vdouble(1.25,
+                                   2.05,
+                                   1.50,
+			           0.00)
+         ),
 	PerformOctoberXDeltaRStep   = cms.bool(False),
         saveDQMMEs                  = cms.bool(True)
 )

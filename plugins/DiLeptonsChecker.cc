@@ -512,6 +512,24 @@ DiLeptonsChecker::beginJob(const edm::EventSetup& es)
   electronCheckerDBtag->begin(es);
   kinematicsCheckerDBtag->begin(es);
   //Can declare many time the same module and use them for different selectition
+  
+  
+   histocontainer_["Selection"]->getTH1()->SetOption("TEXT");
+  histocontainer_["Selection"]->getTH1()->GetXaxis()->SetBinLabel(1,"All events");
+  histocontainer_["Selection"]->getTH1()->GetXaxis()->SetBinLabel(2,"trigger selection");
+  histocontainer_["Selection"]->getTH1()->GetXaxis()->SetBinLabel(3,"non iso lept selection");
+  histocontainer_["Selection"]->getTH1()->GetXaxis()->SetBinLabel(4,"iso lept selection");
+  histocontainer_["Selection"]->getTH1()->GetXaxis()->SetBinLabel(5,"channel selection");
+  histocontainer_["Selection"]->getTH1()->GetXaxis()->SetBinLabel(6,"dilept invariant mass cut");
+  histocontainer_["Selection"]->getTH1()->GetXaxis()->SetBinLabel(7,">=1 jet");
+  histocontainer_["Selection"]->getTH1()->GetXaxis()->SetBinLabel(8,">=2 jet");
+  histocontainer_["Selection"]->getTH1()->GetXaxis()->SetBinLabel(9,"MET cut");
+  
+  
+  
+  
+  
+  
 }
 
 void 

@@ -15,10 +15,10 @@ from JetMETCorrections.Type1MET.MetType1Corrections_cff import *
 process.load("JetMETCorrections.Type1MET.MetType1Corrections_cff")
 process.load("JetMETCorrections.Type1MET.MetMuonCorrections_cff")
 
-process.metJESCorAK5CaloJet  = metJESCorIC5CaloJet.clone()
-process.metJESCorAK5CaloJet.inputUncorJetsLabel = "antikt5CaloJets"
-process.metJESCorAK5CaloJet.inputUncorMetLabel  = "corMetGlobalMuons"
-process.metJESCorAK5CaloJet.corrector = "L2L3JetCorrectorAK5Calo"
+#process.metJESCorAK5CaloJet  = metJESCorIC5CaloJet.clone()
+#process.metJESCorAK5CaloJet.inputUncorJetsLabel = "antikt5CaloJets"
+#process.metJESCorAK5CaloJet.inputUncorMetLabel  = "corMetGlobalMuons"
+#process.metJESCorAK5CaloJet.corrector = "L2L3JetCorrectorAK5Calo"
 
 process.leptonJetsChecker.labelMETs = cms.InputTag('metJESCorAK5CaloJet')
 

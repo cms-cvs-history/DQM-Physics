@@ -5,7 +5,7 @@ diLeptonsCheckerDimu= cms.EDAnalyzer('DiLeptonsChecker',
 	labelMuons        = cms.InputTag('muons'),
 	labelElectrons    = cms.InputTag('gsfElectrons'),
         labelElectronID   = cms.string('eidLoose'),
-        labelJets         = cms.InputTag('antikt5CaloJets'),
+        labelJets         = cms.InputTag('ak5CaloJets'),
         labelMETs         = cms.InputTag('met'),
         labelBeamSpot     = cms.InputTag('offlineBeamSpot'),
         #labelTriggerResults = cms.InputTag('hltTriggerSummaryAOD'),
@@ -44,7 +44,17 @@ diLeptonsCheckerDimu= cms.EDAnalyzer('DiLeptonsChecker',
                                      
         includeBtagInfo           = cms.bool(False), # if true also fill the list of algos! If False the following two parameters are actually not parsed.
         btaggingAlgoLabels        = cms.vstring(""), # for example: btaggingAlgoLabels = cms.vstring("trackCountingHighPurBJetTag","trackCountingHighEffBJetTag","simpleSecondaryVertexBJetTag")                                 
-        btaggingMatchDr           = cms.double(0.5), # match jet used for b-tagging to jet in jet collection                                  
+        btaggingMatchDr           = cms.double(0.5), # match jet used for b-tagging to jet in jet collection   
+	btaggingSelectors = cms.PSet(
+              taggers=cms.vstring("trackCountingHighEffBJetTags",
+                                  "simpleSecondaryVertexBJetTags",
+                                  "jetProbabilityBJetTags",
+                                  "softMuonBJetTags"),
+               cuts   =cms.vdouble(1.25,
+                                   2.05,
+                                   1.50,
+			           0.00)
+         ),                                
         saveDQMMEs                = cms.bool(True)  #Save DQM output file directly without using the framework
 )
  
@@ -53,7 +63,7 @@ diLeptonsCheckerDiel= cms.EDAnalyzer('DiLeptonsChecker',
 	labelMuons        = cms.InputTag('muons'),
 	labelElectrons    = cms.InputTag('gsfElectrons'),
         labelElectronID   = cms.string('eidLoose'),
-        labelJets         = cms.InputTag('antikt5CaloJets'),
+        labelJets         = cms.InputTag('ak5CaloJets'),
         labelMETs         = cms.InputTag('met'),
         labelBeamSpot     = cms.InputTag('offlineBeamSpot'),
         #labelTriggerResults = cms.InputTag('hltTriggerSummaryAOD'),
@@ -92,7 +102,17 @@ diLeptonsCheckerDiel= cms.EDAnalyzer('DiLeptonsChecker',
                                      
         includeBtagInfo           = cms.bool(False), # if true also fill the list of algos! If False the following two parameters are actually not parsed.
         btaggingAlgoLabels        = cms.vstring(""), # for example: btaggingAlgoLabels = cms.vstring("trackCountingHighPurBJetTag","trackCountingHighEffBJetTag","simpleSecondaryVertexBJetTag")                                 
-        btaggingMatchDr           = cms.double(0.5), # match jet used for b-tagging to jet in jet collection                                  
+        btaggingMatchDr           = cms.double(0.5), # match jet used for b-tagging to jet in jet collection 
+	btaggingSelectors = cms.PSet(
+              taggers=cms.vstring("trackCountingHighEffBJetTags",
+                                  "simpleSecondaryVertexBJetTags",
+                                  "jetProbabilityBJetTags",
+                                  "softMuonBJetTags"),
+               cuts   =cms.vdouble(1.25,
+                                   2.05,
+                                   1.50,
+			           0.00)
+         ),                            
         saveDQMMEs                = cms.bool(True)  #Save DQM output file directly without using the framework
 ) 
  
@@ -101,7 +121,7 @@ diLeptonsCheckerElmu= cms.EDAnalyzer('DiLeptonsChecker',
 	labelMuons        = cms.InputTag('muons'),
 	labelElectrons    = cms.InputTag('gsfElectrons'),
         labelElectronID   = cms.string('eidLoose'),
-        labelJets         = cms.InputTag('antikt5CaloJets'),
+        labelJets         = cms.InputTag('ak5CaloJets'),
         labelMETs         = cms.InputTag('met'),
         labelBeamSpot     = cms.InputTag('offlineBeamSpot'),
         #labelTriggerResults = cms.InputTag('hltTriggerSummaryAOD'),
@@ -140,6 +160,16 @@ diLeptonsCheckerElmu= cms.EDAnalyzer('DiLeptonsChecker',
                                      
         includeBtagInfo           = cms.bool(False),  # if true also fill the list of algos! If False the following two parameters are actually not parsed.
         btaggingAlgoLabels        = cms.vstring(""), # for example: btaggingAlgoLabels = cms.vstring("trackCountingHighPurBJetTag","trackCountingHighEffBJetTag","simpleSecondaryVertexBJetTag")                                 
-        btaggingMatchDr           = cms.double(0.5), # match jet used for b-tagging to jet in jet collection                                    
+        btaggingMatchDr           = cms.double(0.5), # match jet used for b-tagging to jet in jet collection  
+	btaggingSelectors = cms.PSet(
+              taggers=cms.vstring("trackCountingHighEffBJetTags",
+                                  "simpleSecondaryVertexBJetTags",
+                                  "jetProbabilityBJetTags",
+                                  "softMuonBJetTags"),
+               cuts   =cms.vdouble(1.25,
+                                   2.05,
+                                   1.50,
+			           0.00)
+         ),                               
         saveDQMMEs                = cms.bool(True)  #Save DQM output file directly without using the framework
 )
