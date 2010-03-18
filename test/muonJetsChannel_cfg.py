@@ -1,7 +1,10 @@
 from DQM.Physics.validationTemplate_cfg import *
+from JetMETCorrections.Configuration.JetCorrectionsRecord_cfi import *
+
 
 ## add jet/MET corrections
-process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer09_cff")
+process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer09_7TeV_cff")
+process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.prefer("L2L3JetCorrectorAK5Calo")
 
 ## define process

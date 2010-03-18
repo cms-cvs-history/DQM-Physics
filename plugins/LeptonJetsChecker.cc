@@ -555,7 +555,7 @@ LeptonJetsChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 }
 
 void 
-LeptonJetsChecker::beginJob(const edm::EventSetup& es)
+LeptonJetsChecker::beginJob()
 {
   edm::LogInfo("Debug|LeptonJetsChecker") << "[LeptonJetsChecker]: beginJob";
   
@@ -633,89 +633,89 @@ LeptonJetsChecker::beginJob(const edm::EventSetup& es)
   }
   
   edm::LogInfo("Debug|LeptonJetsChecker") << "Call begin for modules ..." << std::endl;
-  metChecker->begin(es);
-  jetChecker->begin(es, jetCorrector_);
-  muonChecker->begin(es);
-  electronChecker->begin(es);
-  kinematicsChecker->begin(es);
+  metChecker->begin();
+  jetChecker->begin(jetCorrector_);
+  muonChecker->begin();
+  electronChecker->begin();
+  kinematicsChecker->begin();
    
-  jetCheckerNoSel->begin(es, jetCorrector_);
-  metCheckerNoSel->begin(es);
-  muonCheckerNoSel->begin(es);
-  electronCheckerNoSel->begin(es);
-  kinematicsCheckerNoSel->begin(es);
+  jetCheckerNoSel->begin(jetCorrector_);
+  metCheckerNoSel->begin();
+  muonCheckerNoSel->begin();
+  electronCheckerNoSel->begin();
+  kinematicsCheckerNoSel->begin();
   	
-  jetCheckerLeptonNonIso->begin(es, jetCorrector_);
-  metCheckerLeptonNonIso->begin(es);
-  muonCheckerLeptonNonIso->begin(es);
-  electronCheckerLeptonNonIso->begin(es);
-  kinematicsCheckerLeptonNonIso->begin(es);
+  jetCheckerLeptonNonIso->begin(jetCorrector_);
+  metCheckerLeptonNonIso->begin();
+  muonCheckerLeptonNonIso->begin();
+  electronCheckerLeptonNonIso->begin();
+  kinematicsCheckerLeptonNonIso->begin();
   	
-  jetCheckerLeptonIso->begin(es, jetCorrector_);
-  metCheckerLeptonIso->begin(es);
-  muonCheckerLeptonIso->begin(es);
-  electronCheckerLeptonIso->begin(es);
-  kinematicsCheckerLeptonIso->begin(es);
+  jetCheckerLeptonIso->begin(jetCorrector_);
+  metCheckerLeptonIso->begin();
+  muonCheckerLeptonIso->begin();
+  electronCheckerLeptonIso->begin();
+  kinematicsCheckerLeptonIso->begin();
   	
-  jetCheckerVetoOtherLeptonType->begin(es, jetCorrector_);
-  metCheckerVetoOtherLeptonType->begin(es);
-  muonCheckerVetoOtherLeptonType->begin(es);
-  electronCheckerVetoOtherLeptonType->begin(es);
-  kinematicsCheckerVetoOtherLeptonType->begin(es);
+  jetCheckerVetoOtherLeptonType->begin(jetCorrector_);
+  metCheckerVetoOtherLeptonType->begin();
+  muonCheckerVetoOtherLeptonType->begin();
+  electronCheckerVetoOtherLeptonType->begin();
+  kinematicsCheckerVetoOtherLeptonType->begin();
   
   if (VetoLooseLepton_) {
-    jetCheckerVetoLooseMuon->begin(es, jetCorrector_);
-    metCheckerVetoLooseMuon->begin(es);
-    muonCheckerVetoLooseMuon->begin(es);
-    electronCheckerVetoLooseMuon->begin(es);
-    kinematicsCheckerVetoLooseMuon->begin(es);	
-    jetCheckerVetoLooseElectron->begin(es, jetCorrector_);
-    metCheckerVetoLooseElectron->begin(es);
-    muonCheckerVetoLooseElectron->begin(es);
-    electronCheckerVetoLooseElectron->begin(es);
-    kinematicsCheckerVetoLooseElectron->begin(es);	
+    jetCheckerVetoLooseMuon->begin(jetCorrector_);
+    metCheckerVetoLooseMuon->begin();
+    muonCheckerVetoLooseMuon->begin();
+    electronCheckerVetoLooseMuon->begin();
+    kinematicsCheckerVetoLooseMuon->begin();	
+    jetCheckerVetoLooseElectron->begin(jetCorrector_);
+    metCheckerVetoLooseElectron->begin();
+    muonCheckerVetoLooseElectron->begin();
+    electronCheckerVetoLooseElectron->begin();
+    kinematicsCheckerVetoLooseElectron->begin();	
   }
  
   if (ApplyMETCut_) {
-    jetCheckerMET->begin(es, jetCorrector_);
-    metCheckerMET->begin(es);
-    muonCheckerMET->begin(es);
-    electronCheckerMET->begin(es);
-    kinematicsCheckerMET->begin(es);
+    jetCheckerMET->begin(jetCorrector_);
+    metCheckerMET->begin();
+    muonCheckerMET->begin();
+    electronCheckerMET->begin();
+    kinematicsCheckerMET->begin();
   }
   
-  jetChecker1Jets->begin(es, jetCorrector_);
-  metChecker1Jets->begin(es);
-  muonChecker1Jets->begin(es);
-  electronChecker1Jets->begin(es);
-  kinematicsChecker1Jets->begin(es);
+  jetChecker1Jets->begin(jetCorrector_);
+  metChecker1Jets->begin();
+  muonChecker1Jets->begin();
+  electronChecker1Jets->begin();
+  kinematicsChecker1Jets->begin();
   	
-  jetChecker2Jets->begin(es, jetCorrector_);
-  metChecker2Jets->begin(es);
-  muonChecker2Jets->begin(es);
-  electronChecker2Jets->begin(es);
-  kinematicsChecker2Jets->begin(es);
+  jetChecker2Jets->begin(jetCorrector_);
+  metChecker2Jets->begin();
+  muonChecker2Jets->begin();
+  electronChecker2Jets->begin();
+  kinematicsChecker2Jets->begin();
   	
-  jetChecker3Jets->begin(es, jetCorrector_);
-  metChecker3Jets->begin(es);
-  muonChecker3Jets->begin(es);
-  electronChecker3Jets->begin(es);
-  kinematicsChecker3Jets->begin(es);
+  jetChecker3Jets->begin(jetCorrector_);
+  metChecker3Jets->begin();
+  muonChecker3Jets->begin();
+  electronChecker3Jets->begin();
+  kinematicsChecker3Jets->begin();
   	
-  jetChecker4Jets->begin(es, jetCorrector_);
-  metChecker4Jets->begin(es);
-  muonChecker4Jets->begin(es);
-  electronChecker4Jets->begin(es);
-  kinematicsChecker4Jets->begin(es);
+  jetChecker4Jets->begin(jetCorrector_);
+  metChecker4Jets->begin();
+  muonChecker4Jets->begin();
+  electronChecker4Jets->begin();
+  kinematicsChecker4Jets->begin();
 
-  semiLeptonChecker->beginJob(es, jetCorrector_);
+  semiLeptonChecker->beginJob(jetCorrector_);
 
   if (PerformOctoberXDeltaRStep_) {
-    jetCheckerDeltaR->begin(es, jetCorrector_);
-    metCheckerDeltaR->begin(es);
-    muonCheckerDeltaR->begin(es);
-    electronCheckerDeltaR->begin(es);
-    kinematicsCheckerDeltaR->begin(es);
+    jetCheckerDeltaR->begin(jetCorrector_);
+    metCheckerDeltaR->begin();
+    muonCheckerDeltaR->begin();
+    electronCheckerDeltaR->begin();
+    kinematicsCheckerDeltaR->begin();
   }
   //Can declare many time the same module and use them for different selectition
 }

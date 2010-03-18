@@ -43,7 +43,7 @@ MetChecker::analyze(const std::vector<reco::CaloMET>& mets)
 }
 
 void 
-MetChecker::begin(const edm::EventSetup&)
+MetChecker::begin()
 {
   dqmStore_->setCurrentFolder( relativePath_+"/CaloMETs_"+label_ );
    

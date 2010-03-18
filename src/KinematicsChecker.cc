@@ -63,7 +63,7 @@ KinematicsChecker::analyze(const std::vector<reco::CaloJet>& jets, const std::ve
 }
 
 void 
-KinematicsChecker::begin(const edm::EventSetup&)
+KinematicsChecker::begin()
 {
   std::string ObjectNames[4] = {"CaloJets","CaloMETs","Muons","Electrons"};
 

@@ -440,7 +440,7 @@ DiLeptonsChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 }
 
 void 
-DiLeptonsChecker::beginJob(const edm::EventSetup& es)
+DiLeptonsChecker::beginJob()
 {
   //edm::Service<TFileService> fs;
   //if (!fs) throw edm::Exception(edm::errors::Configuration, "TFileService missing from configuration!");
@@ -452,65 +452,65 @@ DiLeptonsChecker::beginJob(const edm::EventSetup& es)
   histocontainer_["Selection"] = dqmStore_->book1D("Selection" ,"Nof events selected ",12,0, 12);
   //modules
   
-  metChecker->begin(es);
-  jetChecker->begin(es, jetCorrector_ );
-  muonChecker->begin(es);
-  electronChecker->begin(es);
-  kinematicsChecker->begin(es);
+  metChecker->begin();
+  jetChecker->begin(jetCorrector_ );
+  muonChecker->begin();
+  electronChecker->begin();
+  kinematicsChecker->begin();
   
-  metCheckerTrigger->begin(es);
-  jetCheckerTrigger->begin(es, jetCorrector_ );
-  muonCheckerTrigger->begin(es);
-  electronCheckerTrigger->begin(es);
-  kinematicsCheckerTrigger->begin(es);
+  metCheckerTrigger->begin();
+  jetCheckerTrigger->begin(jetCorrector_ );
+  muonCheckerTrigger->begin();
+  electronCheckerTrigger->begin();
+  kinematicsCheckerTrigger->begin();
   
-  metCheckerNonIsoLept->begin(es);
-  jetCheckerNonIsoLept->begin(es, jetCorrector_ );
-  muonCheckerNonIsoLept->begin(es);
-  electronCheckerNonIsoLept->begin(es);
-  kinematicsCheckerNonIsoLept->begin(es);
+  metCheckerNonIsoLept->begin();
+  jetCheckerNonIsoLept->begin(jetCorrector_ );
+  muonCheckerNonIsoLept->begin();
+  electronCheckerNonIsoLept->begin();
+  kinematicsCheckerNonIsoLept->begin();
   
-  metCheckerIsoLept->begin(es);
-  jetCheckerIsoLept->begin(es, jetCorrector_ );
-  muonCheckerIsoLept->begin(es);
-  electronCheckerIsoLept->begin(es);
-  kinematicsCheckerIsoLept->begin(es);
+  metCheckerIsoLept->begin();
+  jetCheckerIsoLept->begin(jetCorrector_ );
+  muonCheckerIsoLept->begin();
+  electronCheckerIsoLept->begin();
+  kinematicsCheckerIsoLept->begin();
   
-  metCheckerLeptPair->begin(es);
-  jetCheckerLeptPair->begin(es, jetCorrector_ );
-  muonCheckerLeptPair->begin(es);
-  electronCheckerLeptPair->begin(es);
-  kinematicsCheckerLeptPair->begin(es);
+  metCheckerLeptPair->begin();
+  jetCheckerLeptPair->begin(jetCorrector_ );
+  muonCheckerLeptPair->begin();
+  electronCheckerLeptPair->begin();
+  kinematicsCheckerLeptPair->begin();
   
-  metCheckerInvM->begin(es);
-  jetCheckerInvM->begin(es, jetCorrector_ );
-  muonCheckerInvM->begin(es);
-  electronCheckerInvM->begin(es);
-  kinematicsCheckerInvM->begin(es);
+  metCheckerInvM->begin();
+  jetCheckerInvM->begin(jetCorrector_ );
+  muonCheckerInvM->begin();
+  electronCheckerInvM->begin();
+  kinematicsCheckerInvM->begin();
   
-  metCheckerJet->begin(es);
-  jetCheckerJet->begin(es, jetCorrector_ );
-  muonCheckerJet->begin(es);
-  electronCheckerJet->begin(es);
-  kinematicsCheckerJet->begin(es);
+  metCheckerJet->begin();
+  jetCheckerJet->begin(jetCorrector_ );
+  muonCheckerJet->begin();
+  electronCheckerJet->begin();
+  kinematicsCheckerJet->begin();
   
-  metCheckerMet->begin(es);
-  jetCheckerMet->begin(es, jetCorrector_ );
-  muonCheckerMet->begin(es);
-  electronCheckerMet->begin(es);
-  kinematicsCheckerMet->begin(es);
+  metCheckerMet->begin();
+  jetCheckerMet->begin(jetCorrector_ );
+  muonCheckerMet->begin();
+  electronCheckerMet->begin();
+  kinematicsCheckerMet->begin();
   
-  metCheckerBtag->begin(es);
-  jetCheckerBtag->begin(es, jetCorrector_ );
-  muonCheckerBtag->begin(es);
-  electronCheckerBtag->begin(es);
-  kinematicsCheckerBtag->begin(es);
+  metCheckerBtag->begin();
+  jetCheckerBtag->begin(jetCorrector_ );
+  muonCheckerBtag->begin();
+  electronCheckerBtag->begin();
+  kinematicsCheckerBtag->begin();
   
-  metCheckerDBtag->begin(es);
-  jetCheckerDBtag->begin(es, jetCorrector_ );
-  muonCheckerDBtag->begin(es);
-  electronCheckerDBtag->begin(es);
-  kinematicsCheckerDBtag->begin(es);
+  metCheckerDBtag->begin();
+  jetCheckerDBtag->begin(jetCorrector_ );
+  muonCheckerDBtag->begin();
+  electronCheckerDBtag->begin();
+  kinematicsCheckerDBtag->begin();
   //Can declare many time the same module and use them for different selectition
   
   

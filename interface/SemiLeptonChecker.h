@@ -58,7 +58,7 @@ class SemiLeptonChecker{
   ~SemiLeptonChecker();
   
   
-  void beginJob(const edm::EventSetup& iSetup, std::string jetCorrector) ;
+  void beginJob(std::string jetCorrector) ;
   void analyze(const std::vector<reco::CaloJet>& jets, bool useJES, const std::vector<reco::CaloMET>& mets, const std::vector<reco::Muon>& muons, const std::vector<reco::GsfElectron>& electrons, const edm::Event& iEvent, const edm::EventSetup& iSetup);
   void endJob() ;
   
@@ -83,6 +83,7 @@ class SemiLeptonChecker{
   bool found_goodMET_;
   bool isMuon_;
   std::string leptonType_;
+  std::string jetCorrector_;
 };
 
 #endif

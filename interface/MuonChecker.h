@@ -49,7 +49,7 @@ class MuonChecker{
   ~MuonChecker();
 
   /// everything that needs to be done before the event loop
-  void begin(const edm::EventSetup& setup) ;
+  void begin() ;
   /// everything that needs to be done during the event loop
   void analyze(const std::vector<reco::Muon>& muons);
   /// everything that needs to be done after the event loop

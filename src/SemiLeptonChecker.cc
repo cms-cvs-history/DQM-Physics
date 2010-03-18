@@ -26,7 +26,7 @@ void
 SemiLeptonChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, const std::vector<reco::CaloMET>& mets, const std::vector<reco::Muon>& muons, const std::vector<reco::GsfElectron>& electrons, const edm::Event& iEvent, const edm::EventSetup& iSetup){
   //using namespace edm;
   NbOfEvents++;
-  
+  acorrector = JetCorrector::getJetCorrector(jetCorrector_,iSetup);
   TLorentzVector METP4;
   TLorentzVector leptonP4;
   TLorentzVector nuP4;
@@ -137,9 +137,9 @@ SemiLeptonChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, 
 }
 
 void 
-SemiLeptonChecker::beginJob(const edm::EventSetup& iSetup, std::string jetCorrector)
+SemiLeptonChecker::beginJob(std::string jetCorrector)
 {
-  acorrector = JetCorrector::getJetCorrector(jetCorrector,iSetup);
+  jetCorrector_ = jetCorrector;
   dqmStore_->setCurrentFolder(relativePath_+"/"+label_+"_Common");
   std::string suffix_ = std::string(isMuon_?"#mu":"e");
   histocontainerC_["LeptonicWMass"] = dqmStore_->book1D("LeptonicW_mass","Mass("+suffix_+" + #nu) [GeV/c^{2}]",30,0.,300.);

@@ -18,7 +18,7 @@ ElectronChecker::~ElectronChecker()
 }
 
 void 
-ElectronChecker::begin(const edm::EventSetup& setup)
+ElectronChecker::begin()
 {
   // histogram booking
   hists_["d0"]= dqmStore_->book1D("d0", "Impact parameter d0", 100,-0.2,  0.2);

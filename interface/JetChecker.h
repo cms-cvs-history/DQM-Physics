@@ -30,7 +30,7 @@ class JetChecker  {
   ~JetChecker();
 
   /// everything that needs to be done before the event loop
-  void begin(const edm::EventSetup& setup, const std::string& corrector);
+  void begin(const std::string& corrector);
   /// everything that needs to be done during the event loop
   void analyze(const std::vector<reco::CaloJet>& jets,  bool useJES, const edm::Event& event, const edm::EventSetup& setup);
   /// everything that needs to be done during the event loop
@@ -40,7 +40,7 @@ class JetChecker  {
 
  private:
   //  b-tagging fill methods:
-  void beginJobBtagging(const edm::EventSetup& setup);
+  void beginJobBtagging();
   
  private:
   /// use for the name of the directory
@@ -69,6 +69,8 @@ class JetChecker  {
   edm::ParameterSet btaggingcuts_;
   /// ...
   std::vector<std::pair<std::string,double > > workingpoints_;
+  
+  std::string jetCorrector_;
 };
 
 #endif

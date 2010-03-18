@@ -46,7 +46,7 @@ class MetChecker  {
   ~MetChecker();
 
   /// everything that needs to be done before the event loop
-  void begin(const edm::EventSetup& setup) ;
+  void begin() ;
   /// everything that needs to be done during the event loop
   void analyze(const std::vector<reco::CaloMET>& mets);
   /// everything that needs to be done after the event loop

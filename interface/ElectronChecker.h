@@ -34,7 +34,7 @@ class ElectronChecker{
   ~ElectronChecker();
 
   /// everything that needs to be done before the event loop
-  void begin(const edm::EventSetup& setup);
+  void begin();
   /// everything that needs to be done during the event loop
   void analyze(const std::vector<reco::GsfElectron>& elecs, const Point& beamSpot=Point(0.0, 0.0, 0.0));
   /// everything that needs to be done after the event loop

@@ -72,7 +72,7 @@ MuonChecker::analyze(const std::vector<reco::Muon>& muons)
 }
 
 void 
-MuonChecker::begin(const edm::EventSetup&)
+MuonChecker::begin()
 {
   dqmStore_->setCurrentFolder( relativePath_+"/Muons_"+label_ );
     

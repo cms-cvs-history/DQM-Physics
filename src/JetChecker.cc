@@ -45,6 +45,7 @@ JetChecker::~JetChecker()
 void
 JetChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+  corrector = JetCorrector::getJetCorrector(jetCorrector_,iSetup);
   std::vector <CaloTowerPtr> jettowers;
   double sumtwrpt; 
   double corrJES = 1;
@@ -103,9 +104,9 @@ JetChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, const e
 }
 
 void 
-JetChecker::begin(const edm::EventSetup& iSetup, const std::string& jetCorrector)
+JetChecker::begin(const std::string& jetCorrector)
 {
-  corrector = JetCorrector::getJetCorrector(jetCorrector,iSetup);
+  jetCorrector_ = jetCorrector;
   dqmStore_->setCurrentFolder( relativePath_+"/CaloJets_"+label_ );
   
   hists_["Jetn90"]            = dqmStore_->book1D("Jetn90" ,"n90 ",10,0,10);
@@ -154,7 +155,7 @@ JetChecker::begin(const edm::EventSetup& iSetup, const std::string& jetCorrector
   
   // b-tagging info:
   if(checkBtaggingSet_)
-    beginJobBtagging(iSetup);
+    beginJobBtagging();
 }
 
 void 
@@ -197,7 +198,7 @@ JetChecker::makeBtagHistName(const size_t &index)
 }
 
 void 
-JetChecker::beginJobBtagging(const edm::EventSetup & iSetup)
+JetChecker::beginJobBtagging()
 {
   // check
   if(!checkBtaggingSet_)
