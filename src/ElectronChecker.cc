@@ -8,7 +8,8 @@ ElectronChecker::ElectronChecker(const edm::ParameterSet& cfg, const std::string
   // dqm storage element
   dqmStore_ = edm::Service<DQMStore>().operator->();
   // set directory structure in the dqm storage object
-  dqmStore_->setCurrentFolder( directory+"/Electrons_"+label );
+  directory_ = directory;
+  label_ = label;
 }
 
 ElectronChecker::~ElectronChecker()
@@ -20,6 +21,7 @@ ElectronChecker::~ElectronChecker()
 void 
 ElectronChecker::begin()
 {
+  dqmStore_->setCurrentFolder( directory_ +"/Electrons_"+label_ );
   // histogram booking
   hists_["d0"]= dqmStore_->book1D("d0", "Impact parameter d0", 100,-0.2,  0.2);
   hists_["d0"]->setAxisTitle("d_{0} (cm)");

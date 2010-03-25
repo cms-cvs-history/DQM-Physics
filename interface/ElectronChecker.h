@@ -45,6 +45,8 @@ class ElectronChecker{
   DQMStore* dqmStore_;
   /// histogram container
   std::map<std::string,MonitorElement*> hists_;
+  std::string directory_;
+  std::string label_;
 };
 
 #endif
