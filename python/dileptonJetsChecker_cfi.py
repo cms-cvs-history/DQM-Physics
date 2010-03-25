@@ -1,7 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
 diLeptonsCheckerDimu= cms.EDAnalyzer('DiLeptonsChecker',
-        outputFileName	  = cms.string('TopMCValidation_dimu.root'),	
 	labelMuons        = cms.InputTag('muons'),
 	labelElectrons    = cms.InputTag('gsfElectrons'),
         labelElectronID   = cms.string('eidLoose'),
@@ -55,7 +54,6 @@ diLeptonsCheckerDimu= cms.EDAnalyzer('DiLeptonsChecker',
                                    1.50,
 			           0.00)
          ),                                
-        saveDQMMEs                = cms.bool(True)  #Save DQM output file directly without using the framework
 )
  
 diLeptonsCheckerDiel= cms.EDAnalyzer('DiLeptonsChecker',
@@ -92,7 +90,7 @@ diLeptonsCheckerDiel= cms.EDAnalyzer('DiLeptonsChecker',
         metCut            = cms.double(50), 
 	Chi2Cut           = cms.int32(10), 
         NofValidHits      = cms.int32(11),
-	triggerPath       = cms.vstring('HLT_Ele15_LW_L1R'),
+	triggerPath       = cms.vstring('HLT_Ele15_SW_L1R'),
 	Xsection          = cms.double(414),   #Xsection X BR if sample of specific decay
 	Luminosity        = cms.int32(100),    #pb-1
         verbose           = cms.bool(False),   
@@ -150,7 +148,7 @@ diLeptonsCheckerElmu= cms.EDAnalyzer('DiLeptonsChecker',
         metCut            = cms.double(30), 
 	Chi2Cut           = cms.int32(10), 
         NofValidHits      = cms.int32(11),
-	triggerPath       = cms.vstring('HLT_Mu9','HLT_Ele15_LW_L1R'),
+	triggerPath       = cms.vstring('HLT_Mu9','HLT_Ele15_SW_L1R'),
 	Xsection          = cms.double(414),   #Xsection X BR if sample of specific decay
 	Luminosity        = cms.int32(100),    #pb-1
         verbose           = cms.bool(False),   
