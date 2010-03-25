@@ -4,7 +4,6 @@ DiLeptonsChecker::DiLeptonsChecker(const edm::ParameterSet& iConfig)
 {
    //now do what ever initialization is needed
   dqmStore_ = edm::Service<DQMStore>().operator->();
-  outputFileName_ = iConfig.getParameter<std::string>("outputFileName");
   
   labelTriggerResults_ = iConfig.getParameter<edm::InputTag>("labelTriggerResults");
   labelBeamSpot_       = iConfig.getParameter<edm::InputTag>( "labelBeamSpot"     );
@@ -254,13 +253,13 @@ DiLeptonsChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   if(triggered) { 
     selection->SelectMuonsDiLeptSimpleSel();
     selection->SelectElectronsDiLeptSimpleeID();
+    histocontainer_["Selection"]->Fill(1);   
     
-    //Trigger selection
+    //Lepton selection
     if( (lookAtDiElectronsChannel_   && selection->GetElectrons().size() >=2) ||
 	(lookAtDiMuonsChannel_       && selection->GetMuons().size()     >=2) ||
 	(lookAtElectronMuonChannel_  && selection->GetMuons().size()     > 0 && selection->GetElectrons().size() >0 )
 	){
-      histocontainer_["Selection"]->Fill(1);   
       metCheckerTrigger->analyze(vmets);
       jetCheckerTrigger->analyze(selection->GetJets(), useJES_, iEvent, iSetup);
       if(!lookAtDiElectronsChannel_) muonCheckerTrigger->analyze(selection->GetMuons());
@@ -626,20 +625,7 @@ DiLeptonsChecker::endJob()
   edm::LogVerbatim ("MainResults") << " >1 jet:                    " << ComputeNbEvent( histocontainer_["Selection"] , 7) << " +/- " << ComputeNbEventError( histocontainer_["Selection"] , 7) << std::endl;
   edm::LogVerbatim ("MainResults") << " met cut:                   " << ComputeNbEvent( histocontainer_["Selection"] , 8) << " +/- " << ComputeNbEventError( histocontainer_["Selection"] , 8) << std::endl;
   
-  dqmStore_->save(outputFileName_);
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(DiLeptonsChecker);

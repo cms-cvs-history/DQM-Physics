@@ -64,7 +64,6 @@ private:
   
   bool verbose_;
   DQMStore* dqmStore_;
-  std::string outputFileName_;
   
   edm::InputTag labelMuons_;
   edm::InputTag labelElectrons_;
