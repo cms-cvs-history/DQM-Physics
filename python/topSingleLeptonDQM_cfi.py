@@ -10,7 +10,7 @@ topSingleLeptonDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
   setup = cms.PSet(
     sources = cms.PSet(
       muons = cms.InputTag("muons"),
-      jets  = cms.InputTag("antikt5CaloJets"),
+      jets  = cms.InputTag("ak5CaloJets"),
       elecs = cms.InputTag("gsfElectrons")
     ),
     jetCorrector = cms.PSet(
@@ -48,7 +48,7 @@ topSingleLeptonDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
   selection = cms.VPSet(
     cms.PSet(
       label  = cms.string("jets:step0"),              # mandatory but can be any name
-      src    = cms.InputTag("antikt5CaloJets"),       # mandatory
+      src    = cms.InputTag("ak5CaloJets"),           # mandatory
       select = cms.string("pt>20 & abs(eta)<2.1"),    # mandatory but can be empty
       min    = cms.int32(4),                          # optional
      #max    = cms.int32(4),                          # optional

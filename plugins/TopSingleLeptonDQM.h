@@ -117,7 +117,7 @@ class TopSingleLeptonDQM : public edm::EDAnalyzer  {
   /// default constructor
   TopSingleLeptonDQM(const edm::ParameterSet& cfg);
   /// defasult destructor
-    ~TopSingleLeptonDQM(){};
+  ~TopSingleLeptonDQM(){};
   
   /// do this during the event loop
   virtual void analyze(const edm::Event& event, const edm::EventSetup& setup);
