@@ -24,10 +24,8 @@ Calculate::operator()(const edm::View<reco::Jet>& jets, const edm::EventSetup& s
   failed_= jets.size()<(unsigned int) maxNJets_;
   if( failed_){ return; }
 
-  // -----------------------------------------------------
   // associate those jets with maximum pt of the vectorial 
   // sum to the hadronic decay chain
-  // -----------------------------------------------------
   double maxPt=-1.;
   std::vector<int> maxPtIndices;
   maxPtIndices.push_back(-1);
@@ -56,10 +54,8 @@ Calculate::operator()(const edm::View<reco::Jet>& jets, const edm::EventSetup& s
 		  jets[maxPtIndices[1]].p4()+
 		  jets[maxPtIndices[2]].p4()).mass();
 
-  // -----------------------------------------------------
   // associate those jets that get closest to the W mass
   // with their invariant mass to the W boson
-  // -----------------------------------------------------
   double wDist =-1.;
   std::vector<int> wMassIndices;
   wMassIndices.push_back(-1);

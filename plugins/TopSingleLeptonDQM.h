@@ -11,6 +11,7 @@
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/Common/interface/ValueMap.h"
+#include "DataFormats/METReco/interface/CaloMET.h"
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 
@@ -25,10 +26,10 @@
    (<10 histograms), VERBOSE(<20 histograms), DEBUG(<30 histgorams). Note that for the sake 
    of simplicity and to force the analyst to keep the number of histograms to be monitored 
    small the MonitorEnsemble class contains the histograms for all objects at once. It should 
-   not contain more than 10 histograms though in the STANDARD configuration, as these 
+   not contain much more than 10 histograms though in the STANDARD configuration, as these 
    histograms will be monitored at each SelectionStep. Monitoring of histograms after selec-
-   tion steps within the same object collection needs to be done within the MonitorEnsemble.
-   It will not be covered by the SelectionStep class.
+   tion steps within the same object collection needs to be implemented within the Monitor-
+   Ensemble. It will not be covered by the SelectionStep class.
 */
 
 namespace TopSingleLepton {
@@ -51,13 +52,13 @@ namespace TopSingleLepton {
 
   private:
     /// check if histogram was booked
-    bool booked(const char* histName) const { return hists_.find(histName)!=hists_.end(); };
+    bool booked(const std::string histName) const { return hists_.find(histName.c_str())!=hists_.end(); };
     /// fill histogram if it had been booked before
-    void fill(const char* histName, double value) const { if(booked(histName)) hists_.find(histName)->second->Fill(value); };
+    void fill(const std::string histName, double value) const { if(booked(histName.c_str())) hists_.find(histName.c_str())->second->Fill(value); };
+    /// fill jet histograms
+    void fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const edm::EventSetup& setup) const;
     /// fill electron histograms
     void fill(const edm::View<reco::GsfElectron>& elecs, const edm::Event& event) const;
-    /// fill jet histograms
-    void fill(const edm::View<reco::Jet>& jets, const edm::EventSetup& setup) const;
     /// fill muon histograms
     void fill(const edm::View<reco::Muon>& muons) const;
 
@@ -67,11 +68,20 @@ namespace TopSingleLepton {
     /// instance label 
     std::string label_;
     /// input sources for monitoring
-    edm::InputTag elecs_, muons_, jets_;
+    edm::InputTag elecs_, muons_, jets_; 
+    /// considers a vector of METs
+    std::vector<edm::InputTag> mets_;
     /// electronId
     edm::InputTag electronId_;
     /// jetCorrector
     std::string jetCorrector_;
+    /// include btag information or not
+    /// to be determined from the cfg  
+    bool includeBTag_;
+    /// btag discriminator labels
+    edm::InputTag btagEff_, btagPur_, btagVtx_;
+    /// btag working points
+    double btagEffWP_, btagPurWP_, btagVtxWP_;
 
     /// storage manager
     DQMStore* store_;
@@ -97,16 +107,26 @@ namespace TopSingleLepton {
 /**
    \class   TopSingleLeptonDQM TopSingleLeptonDQM.h "DQM/Physics/plugins/TopSingleLeptonDQM.h"
 
-   \brief   Add a one line description here
+   \brief   Module to apply a monitored selection of top like events in the semi-leptonic channel
 
    Plugin to apply a monitored selection of top like events with some minimal flexibility 
-   in the number and definition of the selection steps. To achieve this flexibility the it 
+   in the number and definition of the selection steps. To achieve this flexibility it 
    employes the SelectionStep class. The MonitorEnsemble class is used to provide a well 
    defined set of histograms to be monitored after each selection step. The SelectionStep 
    class provides a flexible and intuitive selection via the StringCutParser. SelectionStep 
    and MonitorEnsemble classes are interleaved. The monitoring starts after a preselection 
    step (which is not monitored in the context of this module) with an instance of the 
-   MonitorEnsemble class.
+   MonitorEnsemble class. The following objects are supported for selection:
+
+    - jets  : of type reco::Jet
+    - elecs : of type reco::GsfElectron
+    - muons : of type reco::Muon
+    - met   : of type reco::MET
+
+   These types have to be present as prefix of the selection step paramter _label_ separated 
+   from the rest of the label by a ':' (e.g. in the form "jets:step0"). The class expects 
+   selection labels of this type. They will be disentangled by the private helper functions 
+   _objectType_ and _seletionStep_ as declared below.
 */
 
 /// define MonitorEnsembple to be used
@@ -116,7 +136,7 @@ class TopSingleLeptonDQM : public edm::EDAnalyzer  {
  public: 
   /// default constructor
   TopSingleLeptonDQM(const edm::ParameterSet& cfg);
-  /// defasult destructor
+  /// default destructor
   ~TopSingleLeptonDQM(){};
   
   /// do this during the event loop
@@ -140,9 +160,14 @@ class TopSingleLeptonDQM : public edm::EDAnalyzer  {
   /// string cut selector
   StringCutObjectSelector<reco::BeamSpot>* beamspotSelect_;
 
-  /// definition of selection order
+  /// needed to guarantee the selection order as defined by the order of
+  /// ParameterSets in the _selection_ vector as defined in the config
   std::vector<std::string> selectionOrder_;
-  /// first arg: selection step name, second arg: parameter set
+  /// this is the heart component of the plugin; std::string keeps a label 
+  /// the selection step for later identification, edm::ParameterSet keeps
+  /// the configuration of the selection for the SelectionStep class, 
+  /// MonitoringEnsemble keeps an instance of the MonitorEnsemble class to 
+  /// be filled _after_ each selection step
   std::map<std::string, std::pair<edm::ParameterSet, MonitorEnsemble*> > selection_;
 };
 
