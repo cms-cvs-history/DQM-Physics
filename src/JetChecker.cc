@@ -79,6 +79,9 @@ JetChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, const e
      double diff =  jettowers.size() - (jets)[i].n90();
      hists_["Jetn90vsE-n90"]->Fill((jets)[i].n90(), diff  );
 
+     hists_["JEC_et"]->Fill(jets.at(i).et()*(corrector->correction(jets.at(i), iEvent, iSetup)));
+     hists_["JEC_pt"]->Fill(jets.at(i).pt()*(corrector->correction(jets.at(i), iEvent, iSetup)));
+     hists_["JEC_energy"]->Fill(jets.at(i).energy()*(corrector->correction(jets.at(i), iEvent, iSetup)));
   }
   
   //Fill October exercise quantities:
@@ -152,7 +155,14 @@ JetChecker::begin(const std::string& jetCorrector)
   hists_["ptThird_eta"]   ->setAxisTitle("#eta of jet with third highest p_{T}",1);
   hists_["ptFourth_eta"]   = dqmStore_->book1D("ptFourth_eta" ,"#eta of jet with fourth highest pt", 100 , -3.0, 3.0);
   hists_["ptFourth_eta"]   ->setAxisTitle("#eta of jet with fourth highest p_{T}",1);
-  
+
+  // The et, pt and energy from Kinematics Checker are not Jet Energy Scale corrected:
+  hists_["JEC_et"]   = dqmStore_->book1D("JEC_et" ,"E_{T} of jets (Jet Energy Scale corrected)", 100, 0.0, 200.0);
+  hists_["JEC_et"]   ->setAxisTitle("E_{T} of jet (including JEC)",1);
+  hists_["JEC_pt"]   = dqmStore_->book1D("JEC_pt" ,"p_{T} of jets (Jet Energy Scale corrected)", 100, 0.0, 200.0);
+  hists_["JEC_pt"]   ->setAxisTitle("p_{T} of jet (including JEC)",1);
+  hists_["JEC_energy"]   = dqmStore_->book1D("JEC_energy" ,"Energy of jets (Jet Energy Scale corrected)", 100, 0.0, 300.0);
+  hists_["JEC_energy"]   ->setAxisTitle("Energy of jet (including JEC)",1);
   // b-tagging info:
   if(checkBtaggingSet_)
     beginJobBtagging();
