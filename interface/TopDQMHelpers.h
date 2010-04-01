@@ -53,20 +53,20 @@ accept(const edm::TriggerResults& triggerTable, const std::vector<std::string>& 
 class Calculate {
  public:
   /// default constructor
-  Calculate(int maxNJets, double wMass);
+  Calculate(int maxNJets, double wMass, const JetCorrector* corrector);
   /// default destructor
   ~Calculate(){};
      
   /// calculate W boson mass estimate
-  double massWBoson(const edm::View<reco::Jet>& jets, const edm::EventSetup& setup);
+  double massWBoson(const edm::View<reco::Jet>& jets);
   /// calculate W boson mass estimate
-  double massTopQuark(const edm::View<reco::Jet>& jets, const edm::EventSetup& setup); 
+  double massTopQuark(const edm::View<reco::Jet>& jets); 
   
  private:
   /// do the calculation; this is called only once per event by the first 
   /// function call to return a mass estimate. The once calculated values 
   /// are cached afterwards
-  void operator()(const edm::View<reco::Jet>& jets, const edm::EventSetup& setup);
+  void operator()(const edm::View<reco::Jet>& jets);
 
  private:
   /// indicate failed associations
@@ -79,10 +79,15 @@ class Calculate {
   double massWBoson_;
   /// cache of top quark mass estimate
   double massTopQuark_;
+  /// jet corrector to improve the correlation 
+  /// between parton level and reco level
+  const JetCorrector* corrector_;
 };
 
 
 #include "FWCore/Framework/interface/Event.h"
+#include "DataFormats/JetReco/interface/PFJet.h"
+#include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -201,7 +206,7 @@ template <typename Object>
 bool SelectionStep<Object>::select(const edm::Event& event, const edm::EventSetup& setup)
 {
   // fetch input collection
-  edm::Handle<edm::View<reco::Jet> > src; 
+  edm::Handle<edm::View<Object> > src; 
   event.getByLabel(src_, src);
   
   // load jet corrector if configured such
@@ -212,15 +217,13 @@ bool SelectionStep<Object>::select(const edm::Event& event, const edm::EventSetu
 
   // determine multiplicity of selected objects
   int n=0;
-  for(typename edm::View<reco::Jet>::const_iterator obj=src->begin(); obj!=src->end(); ++obj){
+  for(typename edm::View<Object>::const_iterator obj=src->begin(); obj!=src->end(); ++obj){
     // special treatment for jets; here the problems with template specialisation 
     // arise when dynamically casting a const Object to a reco::Jet which has to 
     // be mutable by definition to allow to change four vector according to the 
     // jet energy corrections derived from the jet correction service
-    if(corrector){
-      reco::Jet jet=*obj; jet.setP4((*obj).p4()*corrector->correction(*obj));
-      if(select_(jet))++n;
-    }
+    Object jet=*obj; jet.scaleEnergy(corrector ? corrector->correction(*obj) : 1.);
+    if(select_(jet))++n;
   }
   bool accept=(min_>=0 ? n>=min_:true) && (max_>=0 ? n<=max_:true);
   return (min_<0 && max_<0) ? (n>0):accept;
