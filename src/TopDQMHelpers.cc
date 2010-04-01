@@ -1,28 +1,37 @@
 #include "DQM/Physics/interface/TopDQMHelpers.h"
 
-Calculate::Calculate(int maxNJets, double wMass): 
-  failed_(false), maxNJets_(maxNJets), wMass_(wMass), massWBoson_(-1.), massTopQuark_(-1.)
+Calculate::Calculate(int maxNJets, double wMass, const JetCorrector* corrector): 
+  failed_(false), maxNJets_(maxNJets), wMass_(wMass), massWBoson_(-1.), massTopQuark_(-1.), corrector_(corrector)
 {
 }
 
 double
-Calculate::massWBoson(const edm::View<reco::Jet>& jets, const edm::EventSetup& setup)
+Calculate::massWBoson(const edm::View<reco::Jet>& jets)
 {
-  if(!failed_&& massWBoson_<0) operator()(jets, setup); return massWBoson_;
+  if(!failed_&& massWBoson_<0) operator()(jets); return massWBoson_;
 }
 
 double 
-Calculate::massTopQuark(const edm::View<reco::Jet>& jets, const edm::EventSetup& setup) 
+Calculate::massTopQuark(const edm::View<reco::Jet>& jets) 
 { 
-  if(!failed_&& massTopQuark_<0) operator()(jets, setup); return massTopQuark_; 
+  if(!failed_&& massTopQuark_<0) operator()(jets); return massTopQuark_; 
 }
 
 void
-Calculate::operator()(const edm::View<reco::Jet>& jets, const edm::EventSetup& setup)
+Calculate::operator()(const edm::View<reco::Jet>& jets)
 {
   if(maxNJets_<0) maxNJets_=jets.size();
   failed_= jets.size()<(unsigned int) maxNJets_;
   if( failed_){ return; }
+
+  // get from uncorrected jets to corrected jets exploiting
+  // the jet corrector; only the first maxNJets_ jets are 
+  // considered
+  std::vector<reco::Jet> correctedJets;
+  for(edm::View<reco::Jet>::const_iterator jet=jets.begin(); jet!=jets.begin()+maxNJets_; ++jet){
+    reco::Jet correctedJet=*jet; correctedJet.scaleEnergy(corrector_->correction(*jet));
+    correctedJets.push_back(correctedJet);
+  }
 
   // associate those jets with maximum pt of the vectorial 
   // sum to the hadronic decay chain
@@ -37,9 +46,9 @@ Calculate::operator()(const edm::View<reco::Jet>& jets, const edm::EventSetup& s
       for(int kdx=0; kdx<maxNJets_; ++kdx){ 
 	if(kdx==idx || kdx==jdx) continue;
 	reco::Particle::LorentzVector sum = 
-	  jets[idx].p4()+
-	  jets[jdx].p4()+
-	  jets[kdx].p4();
+	  correctedJets[idx].p4()+
+	  correctedJets[jdx].p4()+
+	  correctedJets[kdx].p4();
 	if( maxPt<0. || maxPt<sum.pt() ){
 	  maxPt=sum.pt();
 	  maxPtIndices.clear();
@@ -50,9 +59,9 @@ Calculate::operator()(const edm::View<reco::Jet>& jets, const edm::EventSetup& s
       }
     }
   }
-  massTopQuark_= (jets[maxPtIndices[0]].p4()+
-		  jets[maxPtIndices[1]].p4()+
-		  jets[maxPtIndices[2]].p4()).mass();
+  massTopQuark_= (correctedJets[maxPtIndices[0]].p4()+
+		  correctedJets[maxPtIndices[1]].p4()+
+		  correctedJets[maxPtIndices[2]].p4()).mass();
 
   // associate those jets that get closest to the W mass
   // with their invariant mass to the W boson
@@ -65,8 +74,8 @@ Calculate::operator()(const edm::View<reco::Jet>& jets, const edm::EventSetup& s
       if( jdx==idx || maxPtIndices[idx]>maxPtIndices[jdx] ) 
 	continue;
 	reco::Particle::LorentzVector sum = 
-	  jets[maxPtIndices[idx]].p4()+
-	  jets[maxPtIndices[jdx]].p4();
+	  correctedJets[maxPtIndices[idx]].p4()+
+	  correctedJets[maxPtIndices[jdx]].p4();
 	if( wDist<0. || wDist>fabs(sum.mass()-wMass_) ){
 	  wDist=fabs(sum.mass()-wMass_);
 	  wMassIndices.clear();
@@ -75,6 +84,6 @@ Calculate::operator()(const edm::View<reco::Jet>& jets, const edm::EventSetup& s
 	}
     }
   }
-  massWBoson_= (jets[wMassIndices[0]].p4()+
-		jets[wMassIndices[1]].p4()).mass();
+  massWBoson_= (correctedJets[wMassIndices[0]].p4()+
+		correctedJets[wMassIndices[1]].p4()).mass();
 }
