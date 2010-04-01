@@ -63,15 +63,32 @@ topSingleLeptonDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
   ## step, the selection is applied in the order defined
   ## by this vector
   ## [mandatory] : may be empty or contain an arbitrary
-  ## number of PSets as given below
+  ## number of PSets as given below:
   ##
+  ## cms.PSet(
+  ##    ## [mandatory] : 'jets' defines the objects to
+  ##    ## select on, 'step0' labels the histograms;
+  ##    ## instead of 'step0' you can choose any label
+  ##    label  = cms.string("jets:step0"),
+  ##    ## [mandatory] : defines the input collection
+  ##    src    = cms.InputTag("ak5CaloJets"),
+  ##    ## [mandatory] : can be empty or of any kind
+  ##    ## of allowed selection string
+  ##    select = cms.string("pt>30 & abs(eta)<2.1"),
+  ##    ## [optional ] : minimal number of objects
+  ##    ## will be used as '<='
+  ##    min    = cms.int32(4),
+  ##    ## [optional ] : maximal number of objects
+  ##    ## will be used as '>='
+  ##    max    = cms.int32(4),                                    
+  ##    
   selection = cms.VPSet(
     cms.PSet(
-      label  = cms.string("jets:step0"),                   # mandatory: 'jets' defined the objects to select on, but can be any name after the ':'
-      src    = cms.InputTag("ak5CaloJets"),                # mandatory
-      select = cms.string("pt>30 & abs(eta)<2.1"),         # mandatory but can be empty
-      jetCorrector = cms.string("L2L3JetCorrectorAK5Calo"),# optional
-      min    = cms.int32(4),                               # optional
+      label  = cms.string("jets/calo:step0"),
+      src    = cms.InputTag("ak5CaloJets"),
+      select = cms.string("pt>30 & abs(eta)<2.1 & 0.05<emEnergyFraction & emEnergyFraction<0.95"),
+      jetCorrector = cms.string("L2L3JetCorrectorAK5Calo"),
+      min    = cms.int32(4),
     ),
     cms.PSet(
       label  = cms.string("elecs:step1"),    
