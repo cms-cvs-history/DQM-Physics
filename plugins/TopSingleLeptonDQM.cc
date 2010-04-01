@@ -1,3 +1,5 @@
+#include "DataFormats/JetReco/interface/PFJet.h"
+#include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/BTauReco/interface/JetTag.h"
 #include "DQM/Physics/plugins/TopSingleLeptonDQM.h"
 
@@ -9,7 +11,6 @@ namespace TopSingleLepton {
   // nominal mass of the W boson to 
   // be used for the top mass estimate
   static const double WMASS = 80.4;
-
 
   MonitorEnsemble::MonitorEnsemble(const char* label, const edm::ParameterSet& cfg) : label_(label)
   {
@@ -165,9 +166,14 @@ namespace TopSingleLepton {
   void 
   MonitorEnsemble::fill(const edm::Event& event, const edm::EventSetup& setup) const
   {
+    // load jet corrector if configured such
+    const JetCorrector* corrector=0;
+    if(!jetCorrector_.empty()){
+      corrector = JetCorrector::getJetCorrector(jetCorrector_, setup);
+    }
     // fill monitoring plots for jets
     edm::Handle<edm::View<reco::Jet> > jets;
-    event.getByLabel(jets_, jets); fill(*jets, event, setup);
+    event.getByLabel(jets_, jets); fill(*jets, event, corrector);
     // fill monitoring plots for electrons
     edm::Handle<edm::View<reco::GsfElectron> > elecs;
     event.getByLabel(elecs_, elecs); fill(*elecs, event);
@@ -187,19 +193,14 @@ namespace TopSingleLepton {
       }
     }
     // fill W boson and top mass estimates
-    Calculate eventKinematics(MAXJETS, WMASS);
-    fill("massW_"   , eventKinematics.massWBoson  (*jets, setup));
-    fill("massTop_" , eventKinematics.massTopQuark(*jets, setup));
+    Calculate eventKinematics(MAXJETS, WMASS, corrector);
+    fill("massW_"   , eventKinematics.massWBoson  (*jets));
+    fill("massTop_" , eventKinematics.massTopQuark(*jets));
   }
 
   void
-  MonitorEnsemble::fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const edm::EventSetup& setup) const 
+  MonitorEnsemble::fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const JetCorrector* corrector) const 
   {
-    // check jet availability of the corrector
-    const JetCorrector* corrector=0;
-    if(!jetCorrector_.empty()){
-      corrector = JetCorrector::getJetCorrector(jetCorrector_, setup);
-    }
     // check availability of the btaggers
     edm::Handle<reco::JetTagCollection> btagEff, btagPur, btagVtx;
     if( includeBTag_ ){ 
@@ -356,6 +357,18 @@ TopSingleLeptonDQM::analyze(const edm::Event& event, const edm::EventSetup& setu
       }
       if(type=="jets" ){
 	SelectionStep<reco::Jet> step(selection_[key].first);
+	if(step.select(event, setup)){
+	  selection_[key].second->fill(event, setup);
+	} else break;
+      }
+      if(type=="jets/pf" ){
+	SelectionStep<reco::PFJet> step(selection_[key].first);
+	if(step.select(event, setup)){
+	  selection_[key].second->fill(event, setup);
+	} else break;
+      }
+      if(type=="jets/calo" ){
+	SelectionStep<reco::CaloJet> step(selection_[key].first);
 	if(step.select(event, setup)){
 	  selection_[key].second->fill(event, setup);
 	} else break;
