@@ -56,7 +56,7 @@ namespace TopSingleLepton {
     /// fill histogram if it had been booked before
     void fill(const std::string histName, double value) const { if(booked(histName.c_str())) hists_.find(histName.c_str())->second->Fill(value); };
     /// fill jet histograms
-    void fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const edm::EventSetup& setup) const;
+    void fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const JetCorrector* corrector) const;
     /// fill electron histograms
     void fill(const edm::View<reco::GsfElectron>& elecs, const edm::Event& event) const;
     /// fill muon histograms
