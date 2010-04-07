@@ -12,7 +12,7 @@ namespace TopSingleLepton {
   // be used for the top mass estimate
   static const double WMASS = 80.4;
 
-  MonitorEnsemble::MonitorEnsemble(const char* label, const edm::ParameterSet& cfg) : label_(label)
+  MonitorEnsemble::MonitorEnsemble(const char* label, const edm::ParameterSet& cfg) : label_(label), includeBTag_(false)
   {
     // sources have to be given; this PSet is not optional
     edm::ParameterSet sources=cfg.getParameter<edm::ParameterSet>("sources");
@@ -70,26 +70,26 @@ namespace TopSingleLepton {
 	verbosity_= STANDARD;
     }
     // and don't forget to do the histogram booking
-    book();
+    book(cfg.getParameter<std::string>("directory"));
   }
 
   void 
-  MonitorEnsemble::book()
+  MonitorEnsemble::book(std::string directory)
   {
     //set up the current directory path
-    std::string current("Physics/Top/TopSingleLeptonDQM/"); current+=label_;
+    std::string current(directory); current+=label_;
     store_=edm::Service<DQMStore>().operator->();
     store_->setCurrentFolder(current);
 
     // --- [STANDARD] --- //
     // pt of the leading muon
-    hists_["muonPt_"     ] = store_->book1D("MuonPt"     , "pt(Muon)"         , 150,   0., 150.);   
+    hists_["muonPt_"     ] = store_->book1D("MuonPt"     , "pt(Muon)"         ,  50,   0., 150.);   
     // muon multiplicity before std isolation
     hists_["muonMult_"   ] = store_->book1D("MuonMult"   , "N_{all}(Muon)"    ,  10,   0.,  10.);   
     // muon multiplicity after  std isolation
     hists_["muonMultIso_"] = store_->book1D("MuonMultIso", "N_{iso}(Muon)"    ,  10,   0.,  10.);   
     // pt of the leading electron
-    hists_["elecPt_"     ] = store_->book1D("ElecPt"     , "pt(Elec)"         , 150,   0., 150.);   
+    hists_["elecPt_"     ] = store_->book1D("ElecPt"     , "pt(Elec)"         ,  50,   0., 150.);   
     // electron multiplicity before std isolation
     hists_["elecMult_"   ] = store_->book1D("ElecMult"   , "N_{all}(Elec)"    ,  10,   0.,  10.);   
     // electron multiplicity after  std isolation
@@ -97,11 +97,11 @@ namespace TopSingleLepton {
     // multiplicity of jets with pt>20 (corrected to L2+L3)
     hists_["jetMult_"    ] = store_->book1D("JetMult"    , "N_{20}(Jet)"      ,  10,   0.,  10.);   
     // MET (calo)
-    hists_["metCalo_"    ] = store_->book1D("METCalo"    , "MET(Calo)"        , 100,   0., 200.);   
+    hists_["metCalo_"    ] = store_->book1D("METCalo"    , "MET(Calo)"        ,  50,   0., 200.);   
     // W mass estimate
-    hists_["massW_"      ] = store_->book1D("MassW"      , "M(W)"             , 100,  50., 150.);   
+    hists_["massW_"      ] = store_->book1D("MassW"      , "M(W)"             ,  75,  50., 150.);   
     // Top mass estimate
-    hists_["massTop_"    ] = store_->book1D("MassTop"    , "M(Top)"           , 100, 100., 300.);   
+    hists_["massTop_"    ] = store_->book1D("MassTop"    , "M(Top)"           ,  50,  80., 330.);   
     if( verbosity_==STANDARD) return;
 
     // --- [VERBOSE] --- //
@@ -118,32 +118,32 @@ namespace TopSingleLepton {
     // btag discriminator for track counting high efficiency for jets with pt(L2L3)>20
     hists_["jetBDiscEff_"] = store_->book1D("JetBDiscEff", "Disc_{B,Eff}(Jet)",  50,   0.,  10.);   
     // pt of the 1. leading jet (corrected to L2+L3)
-    hists_["jet1Pt_"     ] = store_->book1D("Jet1Pt"     , "pt(Jet1)"         , 100,   0., 200.);   
+    hists_["jet1Pt_"     ] = store_->book1D("Jet1Pt"     , "pt(Jet1)"         ,  60,   0., 300.);   
     // pt of the 2. leading jet (corrected to L2+L3)
-    hists_["jet2Pt_"     ] = store_->book1D("Jet2Pt"     , "pt(Jet2)"         , 100,   0., 200.);   
+    hists_["jet2Pt_"     ] = store_->book1D("Jet2Pt"     , "pt(Jet2)"         ,  60,   0., 300.);   
     // pt of the 3. leading jet (corrected to L2+L3)
-    hists_["jet3Pt_"     ] = store_->book1D("Jet3Pt"     , "pt(Jet3)"         , 100,   0., 200.);   
+    hists_["jet3Pt_"     ] = store_->book1D("Jet3Pt"     , "pt(Jet3)"         ,  60,   0., 300.);   
     // pt of the 4. leading jet (corrected to L2+L3)
-    hists_["jet4Pt_"     ] = store_->book1D("Jet4Pt"     , "pt(Jet4)"         , 100,   0., 200.);   
+    hists_["jet4Pt_"     ] = store_->book1D("Jet4Pt"     , "pt(Jet4)"         ,  60,   0., 300.);   
     // MET (tc)
-    hists_["metTC_"      ] = store_->book1D("METTC"      , "MET(TC)"          , 100,   0., 200.);   
+    hists_["metTC_"      ] = store_->book1D("METTC"      , "MET(TC)"          ,  50,   0., 200.);   
     // MET (pflow)
-    hists_["metPflow_"   ] = store_->book1D("METPflow"   , "MET(Pflow)"       , 100,   0., 200.);   
+    hists_["metPflow_"   ] = store_->book1D("METPflow"   , "MET(Pflow)"       ,  50,   0., 200.);   
     if( verbosity_==VERBOSE) return;
 
     // --- [DEBUG] --- //
     // absolute muon isolation in tracker for the leading muon
-    hists_["muonIsoTrk_" ] = store_->book1D("MuonIsoTrk" , "Iso_{trk}(Muon)"  ,  25,   0.,   5.);   
+    hists_["muonIsoTrk_" ] = store_->book1D("MuonIsoTrk" , "Iso_{trk}(Muon)"  ,  30,   0.,   6.);   
     // absolute muon isolation in ecal for the leading muon
-    hists_["muonIsoEcal_"] = store_->book1D("MuonIsoEcal", "Iso_{ecal}(Muon)" ,  25,   0.,   5.);   
+    hists_["muonIsoEcal_"] = store_->book1D("MuonIsoEcal", "Iso_{ecal}(Muon)" ,  30,   0.,   6.);   
     // absolute muon isolation in hcal for the leading muon
-    hists_["muonIsoHcal_"] = store_->book1D("MuonIsoHcal", "Iso_{hcal}(Muon)" ,  25,   0.,   5.);   
+    hists_["muonIsoHcal_"] = store_->book1D("MuonIsoHcal", "Iso_{hcal}(Muon)" ,  30,   0.,   6.);   
     // absolute electron isolation in tracker for the leading electron
-    hists_["elecIsoTrk_" ] = store_->book1D("ElecIsoTrk" , "Iso_{trk}(Elec)"  ,  25,   0.,   5.);   
+    hists_["elecIsoTrk_" ] = store_->book1D("ElecIsoTrk" , "Iso_{trk}(Elec)"  ,  30,   0.,   6.);   
     // absolute electron isolation in ecal for the leading electron
-    hists_["elecIsoEcal_"] = store_->book1D("ElecIsoEcal", "Iso_{ecal}(Elec)" ,  25,   0.,   5.);   
+    hists_["elecIsoEcal_"] = store_->book1D("ElecIsoEcal", "Iso_{ecal}(Elec)" ,  30,   0.,   6.);   
     // absolute electron isolation in hcal for the leading electron
-    hists_["elecIsoHcal_"] = store_->book1D("ElecIsoHcal", "Iso_{hcal}(Elec)" ,  25,   0.,   5.);   
+    hists_["elecIsoHcal_"] = store_->book1D("ElecIsoHcal", "Iso_{hcal}(Elec)" ,  30,   0.,   6.);   
     // multiplicity of btagged jets (for track counting high purity) with pt(L2L3)>20
     hists_["jetMultBPur_"] = store_->book1D("JetMultBPur", "N_{20}(BJet,Pur)" ,  10,   0.,  10.);   
     // btag discriminator for track counting high purity
@@ -151,15 +151,15 @@ namespace TopSingleLepton {
     // multiplicity of btagged jets (for simple secondary vertex) with pt(L2L3)>20
     hists_["jetMultBVtx_"] = store_->book1D("JetMultBVtx", "N_{20}(BJet,Vtx)" ,  10,   0.,  10.);   
     // btag discriminator for simple secondary vertex
-    hists_["jetBDiscVtx_"] = store_->book1D("JetBDiscVtx", "Disc_{B,Vtx}(Jet)",  30,   0.,   3.);   
+    hists_["jetBDiscVtx_"] = store_->book1D("JetBDiscVtx", "Disc_{B,Vtx}(Jet)",  35,  -1.,   6.);   
     // pt of the 1. leading jet (uncorrected)
-    hists_["jet1PtRaw_"  ] = store_->book1D("Jet1PtRaw"  , "pt(Jet1, raw)"    , 100,   0., 200.);   
+    hists_["jet1PtRaw_"  ] = store_->book1D("Jet1PtRaw"  , "pt(Jet1, raw)"    ,  60,   0., 200.);   
     // pt of the 2. leading jet (uncorrected)
-    hists_["jet2PtRaw_"  ] = store_->book1D("Jet2PtRaw"  , "pt(Jet2, raw)"    , 100,   0., 200.);   
+    hists_["jet2PtRaw_"  ] = store_->book1D("Jet2PtRaw"  , "pt(Jet2, raw)"    ,  60,   0., 200.);   
     // pt of the 3. leading jet (uncorrected)
-    hists_["jet3PtRaw_"  ] = store_->book1D("Jet3PtRaw"  , "pt(Jet3, raw)"    , 100,   0., 200.);   
+    hists_["jet3PtRaw_"  ] = store_->book1D("Jet3PtRaw"  , "pt(Jet3, raw)"    ,  60,   0., 200.);   
     // pt of the 4. leading jet (uncorrected)
-    hists_["jet4PtRaw_"  ] = store_->book1D("Jet4PtRaw"  , "pt(Jet4, raw)"    , 100,   0., 200.);   
+    hists_["jet4PtRaw_"  ] = store_->book1D("Jet4PtRaw"  , "pt(Jet4, raw)"    ,  60,   0., 200.);   
     return;
   }
 
@@ -192,6 +192,7 @@ namespace TopSingleLepton {
 	if(idx==2) fill("metPflow_", met->begin()->et());
       }
     }
+
     // fill W boson and top mass estimates
     Calculate eventKinematics(MAXJETS, WMASS, corrector);
     fill("massW_"   , eventKinematics.massWBoson  (*jets));
@@ -208,6 +209,7 @@ namespace TopSingleLepton {
       event.getByLabel(btagPur_, btagPur);
       event.getByLabel(btagVtx_, btagVtx); 
     }
+
     // loop jet collection
     unsigned int mult=0, mult20=0, mult20BEff=0, mult20BPur=0, mult20BVtx=0;
     for(edm::View<reco::Jet>::const_iterator jet=jets.begin(); jet!=jets.end(); ++jet, ++mult){
@@ -216,7 +218,9 @@ namespace TopSingleLepton {
       // determine corrected jet pt
       double ptL2L3 = jet->pt();
       if(corrector){
-	ptL2L3 *= corrector->correction(*jet);
+	reco::Jet correctedJet = *jet; 
+	correctedJet.scaleEnergy(corrector->correction(*jet));
+	ptL2L3 = correctedJet.pt();
       }
       if(ptL2L3>20){ ++mult20; // determine jet multiplicity
 	if( includeBTag_ ){
@@ -264,7 +268,7 @@ namespace TopSingleLepton {
 	  fill("elecIsoEcal_" , elec->dr04EcalRecHitSumEt());
 	  fill("elecIsoHcal_" , elec->dr04HcalTowerSumEt() );
 	}
-	if( isolation ){
+	if( isolation<0.1 ){
 	  ++multIso;
 	}
       }
@@ -291,7 +295,7 @@ namespace TopSingleLepton {
 	  fill("muonIsoEcal_" , muon->isolationR03().emEt );
 	  fill("muonIsoHcal_" , muon->isolationR03().hadEt);
 	}
-	if( isolation ){
+	if( isolation<0.1 ){
 	  ++multIso;
 	}
       }
