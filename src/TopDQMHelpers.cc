@@ -26,10 +26,11 @@ Calculate::operator()(const edm::View<reco::Jet>& jets)
 
   // get from uncorrected jets to corrected jets exploiting
   // the jet corrector; only the first maxNJets_ jets are 
-  // considered
+  // considered; if corrector is not defined the jets will
+  // be used as uncorrected jets
   std::vector<reco::Jet> correctedJets;
   for(edm::View<reco::Jet>::const_iterator jet=jets.begin(); jet!=jets.begin()+maxNJets_; ++jet){
-    reco::Jet correctedJet=*jet; correctedJet.scaleEnergy(corrector_->correction(*jet));
+    reco::Jet correctedJet=*jet; correctedJet.scaleEnergy(corrector_?corrector_->correction(*jet):1.);
     correctedJets.push_back(correctedJet);
   }
 
