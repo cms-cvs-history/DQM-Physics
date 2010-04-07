@@ -45,8 +45,8 @@ namespace TopSingleLepton {
     /// default destructor
     ~MonitorEnsemble(){};
     
-    /// book histograms
-    void book();
+    /// book histograms in subdirectory _directory_
+    void book(std::string directory);
     /// fill monitor histograms with electronId and jetCorrections
     void fill(const edm::Event& event, const edm::EventSetup& setup) const;
 
