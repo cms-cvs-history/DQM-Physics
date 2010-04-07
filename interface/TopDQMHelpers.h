@@ -88,6 +88,7 @@ class Calculate {
 #include "FWCore/Framework/interface/Event.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
+#include "DataFormats/BTauReco/interface/JetTag.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -137,8 +138,7 @@ public:
 
   /// apply selection
   bool select(const edm::Event& event);
-  /// apply selection (w/o using the template class Object), 
-  /// override for jets
+  /// apply selection override for jets
   bool select(const edm::Event& event, const edm::EventSetup& setup); 
     
 private:
@@ -150,6 +150,10 @@ private:
   edm::InputTag electronId_;
   /// jet corrector as extra selection type
   std::string jetCorrector_;
+  /// choice for b-tag as extra selection type
+  edm::InputTag btagLabel_;
+  /// choice of b-tag working point as extra selection type
+  double btagWorkingPoint_;
   /// string cut selector
   StringCutObjectSelector<Object> select_;
 };
@@ -168,6 +172,13 @@ SelectionStep<Object>::SelectionStep(const edm::ParameterSet& cfg) :
   if(cfg.exists("electronId"  )){ electronId_= cfg.getParameter<edm::InputTag>("electronId"  ); }
   // read jet corrector label if it exists
   if(cfg.exists("jetCorrector")){ jetCorrector_= cfg.getParameter<std::string>("jetCorrector"); }
+  // read btag information if it exists
+  if(cfg.existsAs<edm::ParameterSet>("jetBTagger")){
+    // read btag label
+    btagLabel_=(cfg.getParameter<edm::ParameterSet>("jetBTagger")).getParameter<edm::InputTag>("label");
+    // read btag working point
+    btagWorkingPoint_=(cfg.getParameter<edm::ParameterSet>("jetBTagger")).getParameter<double>("workingPoint");
+  }
 }
 
 /// apply selection
@@ -208,6 +219,17 @@ bool SelectionStep<Object>::select(const edm::Event& event, const edm::EventSetu
   // fetch input collection
   edm::Handle<edm::View<Object> > src; 
   event.getByLabel(src_, src);
+
+  // load btag collection if configured such
+  // NOTE that the JetTagCollection needs an
+  // edm::View to reco::Jets; we have to add
+  // another Handle bjets for this purpose
+  edm::Handle<edm::View<reco::Jet> > bjets; 
+  edm::Handle<reco::JetTagCollection> btagger;
+  if(!btagLabel_.label().empty()){ 
+    event.getByLabel(src_, bjets);
+    event.getByLabel(btagLabel_, btagger);
+  }
   
   // load jet corrector if configured such
   const JetCorrector* corrector=0;
@@ -218,12 +240,14 @@ bool SelectionStep<Object>::select(const edm::Event& event, const edm::EventSetu
   // determine multiplicity of selected objects
   int n=0;
   for(typename edm::View<Object>::const_iterator obj=src->begin(); obj!=src->end(); ++obj){
-    // special treatment for jets; here the problems with template specialisation 
-    // arise when dynamically casting a const Object to a reco::Jet which has to 
-    // be mutable by definition to allow to change four vector according to the 
-    // jet energy corrections derived from the jet correction service
-    Object jet=*obj; jet.scaleEnergy(corrector ? corrector->correction(*obj) : 1.);
-    if(select_(jet))++n;
+    // check for chosen btag discriminator to be above the 
+    // corresponding working point if configured such 
+    unsigned int idx = obj-src->begin();
+    if( btagLabel_.label().empty() ? true : (*btagger)[bjets->refAt(idx)]>btagWorkingPoint_ ){   
+      // scale jet energy if configured such
+      Object jet=*obj; jet.scaleEnergy(corrector ? corrector->correction(*obj) : 1.);
+      if(select_(jet))++n;
+    }
   }
   bool accept=(min_>=0 ? n>=min_:true) && (max_>=0 ? n<=max_:true);
   return (min_<0 && max_<0) ? (n>0):accept;
