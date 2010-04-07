@@ -35,6 +35,8 @@ process.prefer("L2L3JetCorrectorAK5Calo")
 #process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
 process.p = cms.Path(#process.content *
+                     process.topMuonPlusJetsOfflineDQM +
+                     process.topElecPlusJetsOfflineDQM +
                      process.topSingleLeptonDQM +
                      process.dqmSaver
                      )
