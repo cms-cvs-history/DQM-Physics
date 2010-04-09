@@ -60,11 +60,11 @@ namespace TopDiLeptonOffline {
     /// fill jet histograms
     void fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const JetCorrector* corrector, double& phiJet1, double& etaJet1, double& phiJet2, double& etaJet2) const;
     /// fill electron histograms
-    void fill(const edm::View<reco::GsfElectron>& elecs, const edm::Event& event, double& phiElec1, double& etaElec1, double& phiElec2, double& etaElec2, double& ptElec1, double& ptElec2) const;
+    void fill(const edm::View<reco::GsfElectron>& elecs, const edm::Event& event, double& phiElec1, double& etaElec1, double& phiElec2, double& etaElec2, double& ptElec1, double& ptElec2, unsigned int& nElec, unsigned int& nElecIso) const;
     /// fill muon histograms
-    void fill(const edm::View<reco::Muon>& muons, double& phiMuon1, double& etaMuon1, double& phiMuon2, double& etaMuon2, double& ptMuon1, double& ptMuon2) const;
+    void fill(const edm::View<reco::Muon>& muons, double& phiMuon1, double& etaMuon1, double& phiMuon2, double& etaMuon2, double& ptMuon1, double& ptMuon2, unsigned int& nMuon, unsigned int& nMuonIso) const;
     /// fill histograms including differing objects
-    void fill(double& phiJet1, double& etaJet1, double& phiJet2, double& etaJet2, double& phiElec1, double& etaElec1, double& phiElec2, double& etaElec2, double& phiMuon1, double& etaMuon1, double& phiMuon2, double& etaMuon2, double& phiMET, double& etaMET, double& ptElec1, double& ptElec2, double& ptMuon1, double& ptMuon2) const;
+    void fill(double& phiJet1, double& etaJet1, double& phiJet2, double& etaJet2, double& phiElec1, double& etaElec1, double& phiElec2, double& etaElec2, double& phiMuon1, double& etaMuon1, double& phiMuon2, double& etaMuon2, double& phiMET, double& etaMET, double& ptElec1, double& ptElec2, double& ptMuon1, double& ptMuon2, unsigned int& nElec, unsigned int& nElecIso, unsigned int& nMuon, unsigned int& nMuonIso) const;
   private:
     /// verbosity level for booking
     Level verbosity_;

@@ -95,7 +95,7 @@ topDiLeptonOfflineDQM = cms.EDAnalyzer("TopDiLeptonOfflineDQM",
     cms.PSet(
       label  = cms.string("elecs:step1"),    
       src    = cms.InputTag("gsfElectrons"),
-      select = cms.string("pt>20 & abs(eta)<2.4 & pt/(pt+dr04TkSumPt)>0.9 & pt/(pt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt>0.8"),
+      select = cms.string("pt>20 & abs(eta)<2.4 & pt/(pt+dr04TkSumPt)>0.9 & pt/(pt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)>0.8"),
       electronId  = cms.InputTag("eidLoose"),
       min    = cms.int32(1)
     ),
