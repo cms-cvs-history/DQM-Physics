@@ -524,8 +524,25 @@ void Selection::SelectJets(){
   std::vector<reco::CaloJet> tmpjets = jets;
   jets.clear();
   for(unsigned int i=0;i<tmpjets.size();i++){
-    if(fabs(tmpjets[i].eta())<JetEtaThreshold_ && tmpjets[i].pt()>JetPtThreshold_ && tmpjets[i].energyFractionHadronic()>=JetEHThreshold_)
+    bool passDeltaRCut = true;
+    
+    if (applyLeptonJetDeltaRCut_ && "electron" == leptonType_) {
+  	std::vector<reco::GsfElectron> nonIsolatedElectrons = this->GetSelectedElectronsNonIso();
+	for (std::vector<reco::GsfElectron>::iterator electron = nonIsolatedElectrons.begin(); electron != nonIsolatedElectrons.end(); ++electron) {
+	    if (reco::deltaR(tmpjets.at(i), *electron) < JetDeltaRLeptonJetThreshold_) {passDeltaRCut = false;}
+        }
+    }
+    if (applyLeptonJetDeltaRCut_ && "muon" == leptonType_) {
+  	std::vector<reco::Muon> nonIsolatedMuons = this->GetSelectedMuonsNonIso();
+	for (std::vector<reco::Muon>::iterator muon = nonIsolatedMuons.begin(); muon != nonIsolatedMuons.end(); ++muon) {
+	    if (reco::deltaR(tmpjets.at(i), *muon) < JetDeltaRLeptonJetThreshold_) {passDeltaRCut = false;}
+        }
+    }
+    
+    if(fabs(tmpjets[i].eta())<JetEtaThreshold_ && tmpjets[i].pt()>JetPtThreshold_ && tmpjets[i].energyFractionHadronic()>=JetEHThreshold_ && passDeltaRCut) {
     	jets.push_back(tmpjets[i]);
+    }
+  
   }  
   std::sort(jets.begin(),jets.end(),HighestPt());
 }
@@ -534,8 +551,23 @@ void Selection::SelectJets(float PtThr, float EtaThr, float EHThr){
   std::vector<reco::CaloJet> tmpjets = jets;
   jets.clear();
   for(unsigned int i=0;i<tmpjets.size();i++){
-    if(fabs(tmpjets[i].eta())<EtaThr && tmpjets[i].pt()>PtThr && tmpjets[i].energyFractionHadronic()>=EHThr)
+    bool passDeltaRCut = true;
+    if (applyLeptonJetDeltaRCut_ && "electron" == leptonType_) {
+  	std::vector<reco::GsfElectron> nonIsolatedElectrons = this->GetSelectedElectronsNonIso();
+	for (std::vector<reco::GsfElectron>::iterator electron = nonIsolatedElectrons.begin(); electron != nonIsolatedElectrons.end(); ++electron) {
+	    if (reco::deltaR(tmpjets.at(i), *electron) < JetDeltaRLeptonJetThreshold_) {passDeltaRCut = false;}
+        }
+    }
+    if (applyLeptonJetDeltaRCut_ && "muon" == leptonType_) {
+  	std::vector<reco::Muon> nonIsolatedMuons = this->GetSelectedMuonsNonIso();
+	for (std::vector<reco::Muon>::iterator muon = nonIsolatedMuons.begin(); muon != nonIsolatedMuons.end(); ++muon) {
+	    if (reco::deltaR(tmpjets.at(i), *muon) < JetDeltaRLeptonJetThreshold_) {passDeltaRCut = false;}
+        }
+    }
+    
+    if(fabs(tmpjets[i].eta())<EtaThr && tmpjets[i].pt()>PtThr && tmpjets[i].energyFractionHadronic()>=EHThr && passDeltaRCut) {
     	jets.push_back(tmpjets[i]);
+    }
   }
   std::sort(jets.begin(),jets.end(),HighestPt());
 }
@@ -546,9 +578,26 @@ void Selection::SelectJets(const edm::Event& iEvent, const edm::EventSetup& iSet
   std::vector<reco::CaloJet> tmpjets = jets;
   jets.clear();
   for(unsigned int i=0;i<tmpjets.size();i++){
+    bool passDeltaRCut = true;   
+    if (applyLeptonJetDeltaRCut_ && "electron" == leptonType_) {
+  	std::vector<reco::GsfElectron> nonIsolatedElectrons = this->GetSelectedElectronsNonIso();
+ 	for (std::vector<reco::GsfElectron>::iterator electron = nonIsolatedElectrons.begin(); electron != nonIsolatedElectrons.end(); ++electron) {
+ 	    if (reco::deltaR(tmpjets.at(i), *electron) < JetDeltaRLeptonJetThreshold_) {passDeltaRCut = false;}
+        }
+    }
+    if (applyLeptonJetDeltaRCut_ && "muon" == leptonType_) {
+  	std::vector<reco::Muon> nonIsolatedMuons = this->GetSelectedMuonsNonIso();
+	for (std::vector<reco::Muon>::iterator muon = nonIsolatedMuons.begin(); muon != nonIsolatedMuons.end(); ++muon) {
+	    if (reco::deltaR(tmpjets.at(i), *muon) < JetDeltaRLeptonJetThreshold_) {passDeltaRCut = false;}
+        }
+    }
+    
     double corrJES = acorrector->correction((tmpjets)[i], iEvent, iSetup);
-    if(fabs(tmpjets[i].eta())<JetEtaThreshold_ && tmpjets[i].pt()*corrJES>JetPtThreshold_ && tmpjets[i].energyFractionHadronic()>=JetEHThreshold_)
+    
+    
+    if (fabs(tmpjets[i].eta())<JetEtaThreshold_ && tmpjets[i].pt()*corrJES>JetPtThreshold_ && tmpjets[i].energyFractionHadronic()>=JetEHThreshold_ && passDeltaRCut) {
     	jets.push_back(tmpjets[i]);
+    }
   }  
   std::sort(jets.begin(),jets.end(),HighestPt());
 }
@@ -556,10 +605,26 @@ void Selection::SelectJets(const edm::Event& iEvent, const edm::EventSetup& iSet
 void Selection::SelectJets(float PtThr, float EtaThr, float EHThr, const edm::Event& iEvent, const edm::EventSetup& iSetup, const JetCorrector *acorrector){
   std::vector<reco::CaloJet> tmpjets = jets;
   jets.clear();
-  for(unsigned int i=0;i<tmpjets.size();i++){
+  for (unsigned int i=0;i<tmpjets.size();i++) {
+    bool passDeltaRCut = true;   
+    if (applyLeptonJetDeltaRCut_ && "electron" == leptonType_) {
+  	std::vector<reco::GsfElectron> nonIsolatedElectrons = this->GetSelectedElectronsNonIso();
+ 	for (std::vector<reco::GsfElectron>::iterator electron = nonIsolatedElectrons.begin(); electron != nonIsolatedElectrons.end(); ++electron) {
+ 	    if (reco::deltaR(tmpjets.at(i), *electron) < JetDeltaRLeptonJetThreshold_) {passDeltaRCut = false;}
+        }
+    }
+    if (applyLeptonJetDeltaRCut_ && "muon" == leptonType_) {
+  	std::vector<reco::Muon> nonIsolatedMuons = this->GetSelectedMuonsNonIso();
+	for (std::vector<reco::Muon>::iterator muon = nonIsolatedMuons.begin(); muon != nonIsolatedMuons.end(); ++muon) {
+	    if (reco::deltaR(tmpjets.at(i), *muon) < JetDeltaRLeptonJetThreshold_) {passDeltaRCut = false;}
+        }
+    }
+    
+    
     double corrJES = acorrector->correction((tmpjets)[i], iEvent, iSetup);
-    if(fabs(tmpjets[i].eta())<EtaThr && tmpjets[i].pt()*corrJES>PtThr && tmpjets[i].energyFractionHadronic()>=EHThr)
+    if (fabs(tmpjets[i].eta())<EtaThr && tmpjets[i].pt()*corrJES>PtThr && tmpjets[i].energyFractionHadronic()>=EHThr && passDeltaRCut) {
     	jets.push_back(tmpjets[i]);
+    }
   }
   std::sort(jets.begin(),jets.end(),HighestPt());
 }

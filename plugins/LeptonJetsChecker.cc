@@ -418,7 +418,10 @@ LeptonJetsChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	  }
 	  
 	  if (PerformOctoberXDeltaRStep_) {
-	    selection->SetJetConfig(JetDeltaRLeptonJetThreshold, true);
+	    //(re)selection jets with Delta R cut applied.
+	    selection->SetJetConfig(JetDeltaRLeptonJetThreshold, true);	    
+	    selection->SelectJets(iEvent, iSetup, acorrector);
+	    nJetBinToFill = selection->GetJets().size();	    
 	    histocontainer_["Selection"]->Fill(7);
 	    histocontainer_["Selection_Vs_Multiplicity"]->Fill(nJetBinToFill, 7);
 	    
