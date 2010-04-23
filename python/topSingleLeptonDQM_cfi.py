@@ -152,14 +152,14 @@ topMuonPlusJetsOfflineDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
     cms.PSet(
       label  = cms.string("elecs:step1"),    
       src    = cms.InputTag("gsfElectrons"),
-      select = cms.string("pt>20 & abs(eta)<2.1 & (dr04TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.2"),
+      select = cms.string("pt>20 & abs(eta)<2.5 & (dr04TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.2"),
       electronId  = cms.InputTag("eidRobustTight"),
       max    = cms.int32(0),
     ),
     cms.PSet(
       label  = cms.string("muons:step2"),    
       src    = cms.InputTag("muons"),
-      select = cms.string("pt>20 & abs(eta)<2.1 & (isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.1"),
+      select = cms.string("pt>20 & abs(eta)<2.1 & (isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.05"),
       min    = cms.int32(1),
       max    = cms.int32(1)
     ),    
@@ -246,13 +246,13 @@ topElecPlusJetsOfflineDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
     cms.PSet(
       label  = cms.string("muons:step1"),    
       src    = cms.InputTag("muons"),
-      select = cms.string("pt>20 & abs(eta)<2.1 & (isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.2"),
+      select = cms.string("pt>30 & abs(eta)<2.1 & (isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.05"),
       max    = cms.int32(0)
     ),    
     cms.PSet(
       label  = cms.string("elecs:step2"),    
       src    = cms.InputTag("gsfElectrons"),
-      select = cms.string("pt>30 & abs(eta)<2.5 & (dr04TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.1"),
+      select = cms.string("pt>30 & abs(eta)<2.4 & (dr04TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.1"),
       electronId  = cms.InputTag("eidRobustTight"),
       min    = cms.int32(1),
       max    = cms.int32(1)
