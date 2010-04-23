@@ -12,27 +12,38 @@
    
    \brief   Helper function to determine trigger accepts.
    
-   Helper function to determine trigger accepts for given TriggerResults and 
-   given set of TriggerPaths.
+   Helper function to determine trigger accept for given TriggerResults and 
+   a given TriggerPath(s).
 */
+
+inline bool 
+accept(const edm::TriggerResults& triggerTable, const std::string& triggerPath)
+{
+  bool passed=false;
+  edm::TriggerNames triggerNames;
+  triggerNames.init(triggerTable);
+  for(unsigned int i=0; i<triggerNames.triggerNames().size(); ++i){
+    if(triggerNames.triggerNames()[i] == triggerPath) {
+      if(triggerTable.accept(i)){
+	passed=true;
+	break;
+      }
+    }
+  }
+  return passed;
+}
 
 inline bool 
 accept(const edm::TriggerResults& triggerTable, const std::vector<std::string>& triggerPaths)
 {
-  bool accept=false;
-  edm::TriggerNames triggerNames;
-  triggerNames.init(triggerTable);
-  for(unsigned int i=0; i<triggerNames.triggerNames().size(); ++i){
-    for(unsigned int j=0; j<triggerPaths.size(); ++j){
-      if(triggerNames.triggerNames()[i] == triggerPaths[j]) {
-	if(triggerTable.accept(i)){
-	  accept=true;
-	}
-	if(accept==true) break;
-      }
+  bool passed=false;
+  for(unsigned int j=0; j<triggerPaths.size(); ++j){
+    if(accept(triggerTable, triggerPaths[j])){
+      passed=true;
+      break;
     }
   }
-  return accept;
+  return passed;
 }
 
 #include "DataFormats/JetReco/interface/Jet.h"
