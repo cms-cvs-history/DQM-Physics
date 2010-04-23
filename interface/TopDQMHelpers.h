@@ -127,11 +127,16 @@ class Calculate {
                      the selection (optional).
     - electronId   : input tag of an electronId association map (optional). 
     - jetCorrector : label of jet corrector (optional).
+    - jetBTagger   : parameters defining the btag algorith amd working point of choice
+                     (optional).
+
    The parameters _src_ and _select_ are mandatory. The parameters _min_ and _max_ are 
    optional. The parameters _electronId_ and _jetCorrector_ are optional. They are added 
    to keep the possibility to apply selections on id'ed electrons or on corrected jets. 
    They may be omitted in the PSet for simplification reasons if not needed at any time. 
-   They are not effiective for other object collections but electrons or jets. 
+   They are not effiective for other object collections but electrons or jets. If none
+   of the two parameters _min_ or _max_ is found in the event the select function returns 
+   true if at least one object fullfilled the requirements.
 
    The class has one template value, which is the object collection to apply the selection 
    on. This has to be parsed to the StringCutParser class. The function select is overrided 
