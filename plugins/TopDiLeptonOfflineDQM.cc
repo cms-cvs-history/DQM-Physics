@@ -1,3 +1,5 @@
+#include <algorithm>
+#include "DQM/Physics/interface/TopDQMHelpers.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/BTauReco/interface/JetTag.h"
@@ -34,6 +36,13 @@ namespace TopDiLeptonOffline {
 	jetCorrector_= jetExtras.getParameter<std::string>("jetCorrector");
       }
     }
+    // triggerExtras are optional; they may be omitted or 
+    // empty
+    if( cfg.existsAs<edm::ParameterSet>("triggerExtras") ){
+      edm::ParameterSet triggerExtras=cfg.getParameter<edm::ParameterSet>("triggerExtras");
+      triggerTable_=triggerExtras.getParameter<edm::InputTag>("src");
+      triggerPaths_=triggerExtras.getParameter<std::vector<std::string> >("select");
+    }
 
     // setup the verbosity level for booking histograms;
     // per default the verbosity level will be set to 
@@ -50,154 +59,144 @@ namespace TopDiLeptonOffline {
 	verbosity_= STANDARD;
     }
     // and don't forget to do the histogram booking
-    book();
+    book(cfg.getParameter<std::string>("directory"));
   }
 
   void 
-  MonitorEnsemble::book()
+  MonitorEnsemble::book(std::string directory)
   {
     //set up the current directory path
-    std::string current("Physics/Top/TopDiLeptonOfflineDQM/"); current+=label_;
+    std::string current(directory); current+=label_;
     store_=edm::Service<DQMStore>().operator->();
     store_->setCurrentFolder(current);
 
+    // determine number of bins for trigger monitoring
+    unsigned int n=triggerPaths_.size();
+
     // --- [STANDARD] --- //
-    // pt of the leading lepton
-    hists_["leptPt_"      ] = store_->book1D("LeptPt"     , "pt(Lepton)"            , 150,   0., 150.);
-    // pt of the 2. leading lepton
-    hists_["lept2Pt_"     ] = store_->book1D("Lept2Pt"    , "pt(Lepton2)"           , 150,   0., 150.);
+    // invariant mass of opposite charge lepton pair
+    hists_["invMass_"     ] = store_->book1D("InvMass"     , "M(Lep, Lep)"            ,  80,   0., 320.);
+    // invariant mass of opposite charge lepton pair
+    hists_["invMassLog_"  ] = store_->book1D("InvMassLog"  , "log(M(Lep, Lep))"       ,  80,   1.,  2.5);
+    // invariant mass of wrong charge lepton pair (in log10 for low mass region)
+    hists_["invMassWC_"   ] = store_->book1D("InvMassWC"   , "M_{WC}(Lep, Lep)"       ,  80,   0., 320.);
+    // invariant mass of wrong charge lepton pair (in log10 for low mass region)
+    hists_["invMassWCLog_"] = store_->book1D("InvMassLogWC", "log(M_{WC}(Lep, Lep))"  ,  80,   1.,  2.5);
+    // decay channel [1]: muon/muon, [2]:elec/elec, [3]:elec/muon 
+    hists_["decayChannel_"] = store_->book1D("decayChannel", "Decay Channel Estimate" ,   3,    0,    3);
+    // fired selection trigger
+    hists_["triggerSel_"  ] = store_->book1D("TriggerSel"  , "Sel(Lepton Triggers)"   ,   n,   0.,    n);
+    // fired monitor triggers
+    hists_["triggerMon_"  ] = store_->book1D("TriggerMon"  , "Mon(Lepton Triggers)"   ,   n,   0.,    n);
     // lepton multiplicity before std isolation
-    hists_["leptMult_"    ] = store_->book1D("LeptMult"   , "N_{all}(Lepton)"       ,  10,   0.,  10.);   
+    hists_["leptMult_"    ] = store_->book1D("LeptMult"    , "N_{all}(Lepton)"        ,  10,   0.,  10.);   
     // lepton multiplicity after std isolation
-    hists_["leptMultIso_" ] = store_->book1D("LeptMultIso", "N_{iso}(Lepton)"       ,  10,   0.,  10.);
-    // eta of the leading lepton
-    hists_["leptEta_"     ] = store_->book1D("LeptEta"    , "eta(Lepton)"           ,  30,  -5.,   5.); 
-    // eta of the 2. leading lepton
-    hists_["lept2Eta_"    ] = store_->book1D("Lept2Eta"   , "eta(Lepton2)"          ,  30,  -5.,   5.);
-     // phi of the leading lepton
-    hists_["leptPhi_"     ] = store_->book1D("LeptPhi"    , "phi(Lepton)"           ,  32, -3.2,  3.2); 
-    // phi of the 2. leading lepton
-    hists_["lept2Phi_"    ] = store_->book1D("Lept2Phi"   , "phi(Lepton2)"          ,  32, -3.2,  3.2);
+    hists_["leptMultIso_" ] = store_->book1D("LeptMultIso" , "N_{iso}(Lepton)"        ,  10,   0.,  10.);
+    // pt of the leading lepton
+    hists_["lept1Pt_"     ] = store_->book1D("Lept1Pt"     , "pt(Leading Lepton)"     ,  50,   0., 150.);
+    // pt of the 2. leading lepton
+    hists_["lept2Pt_"     ] = store_->book1D("Lept2Pt"     , "pt(Subleading Lepton)"  ,  50,   0., 150.);
     // multiplicity of jets with pt>30 (corrected to L2+L3)
-    hists_["jetMult_"     ] = store_->book1D("JetMult"    , "N_{30}(Jet)"           ,  10,   0.,  10.); 
-    // pt of the 1. leading jet (corrected to L2+L3)
-    hists_["jet1Pt_"      ] = store_->book1D("Jet1Pt"     , "pt(Jet1)"              , 100,   0., 200.);   
-    // pt of the 2. leading jet (corrected to L2+L3)
-    hists_["jet2Pt_"      ] = store_->book1D("Jet2Pt"     , "pt(Jet2)"              , 100,   0., 200.);
-    // pt of the 1. leading jet (not corrected)
-    hists_["jet1PtRaw_"   ] = store_->book1D("Jet1PtRaw"  , "pt(Jet1,raw)"          , 100,   0., 200.);   
-    // pt of the 2. leading jet (not corrected)     
-    hists_["jet2PtRaw_"   ] = store_->book1D("Jet2PtRaw"  , "pt(Jet2,raw)"          , 100,   0., 200.);
-    // eta of the leading jet
-    hists_["jetEta_"      ] = store_->book1D("JetEta"     , "eta(Jet)"              ,  30,  -5.,   5.); 
-    // eta of the 2. leading jet
-    hists_["jet2Eta_"     ] = store_->book1D("Jet2Eta"    , "eta(Jet2)"             ,  30,  -5.,   5.);
-     // phi of the leading jet
-    hists_["jetPhi_"      ] = store_->book1D("JetPhi"     , "phi(Jet)"              ,  32, -3.2,  3.2); 
-    // phi of the 2. leading jet
-    hists_["jet2Phi_"     ] = store_->book1D("Jet2Phi"    , "phi(Jet2)"             ,  32, -3.2,  3.2);
+    hists_["jetMult_"     ] = store_->book1D("JetMult"     , "N_{30}(Jet)"            ,  10,   0.,  10.); 
     // MET (calo)
-    hists_["metCalo_"     ] = store_->book1D("METCalo"    , "MET(Calo)"             , 100,   0., 200.);
-    // MET (PF)
-    hists_["metPF_"       ] = store_->book1D("METPF"      , "MET(PF)"               , 100,   0., 200.);
-    // MET (TC)
-    hists_["metTC_"       ] = store_->book1D("METTC"      , "MET(TC)"               , 100,   0., 200.);
-//     // invariant mass of lepton pair
-//     hists_["invMLept_"    ] = store_->book1D("InvMLept"   , "invM(ll)"              , 100,   0., 200.);            FIXME
-    // fired triggers
-//     hists_["triggers_"    ] = store_->book1D("Triggers"   , "fired Triggers"        ,   3,    0,    2);            FIXME
+    hists_["metCalo_"     ] = store_->book1D("METCalo"     , "MET(Calo)"              ,  50,   0., 200.);
+
+    // set bin labels for decayChannel_
+    hists_["decayChannel_"]->setBinLabel( 1, "#mu e"  , 1);
+    hists_["decayChannel_"]->setBinLabel( 2, "#mu #mu", 1);
+    hists_["decayChannel_"]->setBinLabel( 3, "e e"    , 1);
+
+    // set bin labels for trigger monitoring
+    for(unsigned int iTrigger=0; iTrigger<triggerPaths_.size(); ++iTrigger){
+      hists_["triggerMon_"]->setBinLabel( iTrigger+1, "["+monitorPath(triggerPaths_[iTrigger])+"]", 1);
+      hists_["triggerSel_"]->setBinLabel( iTrigger+1, "["+selectionPath(triggerPaths_[iTrigger])+"]|["+selectionPath(triggerPaths_[iTrigger])+"]", 1);
+    }
     if( verbosity_==STANDARD) return;
 
-     // --- [VERBOSE] --- //
-    // pt of the leading electron
-    hists_["elec1Pt_"     ] = store_->book1D("Elec1Pt"    , "pt(Electron1)"         , 150,   0., 150.);
-    // pt of the 2. leading electron
-    hists_["elec2Pt_"     ] = store_->book1D("Elec2Pt"    , "pt(Electron2)"         , 150,   0., 150.);
-    // pt of the leading muon
-    hists_["muon1Pt_"     ] = store_->book1D("Muon1Pt"    , "pt(Muon1)"             , 150,   0., 150.);
-    // pt of the 2. leading muon
-    hists_["muon2Pt_"     ] = store_->book1D("Muon2Pt"    , "pt(Muon2)"             , 150,   0., 150.);
-    // electron multiplicity before std isolation
-    hists_["elecMult_"    ] = store_->book1D("ElecMult"   , "N_{all}(Electron)"     ,  10,   0.,  10.);   
+    // --- [VERBOSE] --- //
     // electron multiplicity after std isolation
-    hists_["elecMultIso_" ] = store_->book1D("ElecMultIso", "N_{iso}(Electron)"     ,  10,   0.,  10.);
-    // muon multiplicity before std isolation
-    hists_["muonMult_"    ] = store_->book1D("MuonMult"   , "N_{all}(Muon)"         ,  10,   0.,  10.);   
+    hists_["elecMultIso_" ] = store_->book1D("ElecMultIso" , "N_{iso}(Electron)"      ,  10,   0.,  10.);
     // muon multiplicity after std isolation
-    hists_["muonMultIso_" ] = store_->book1D("MuonMultIso", "N_{iso}(Muon)"         ,  10,   0.,  10.);
-    // eta of the leading electron
-    hists_["elec1Eta_"    ] = store_->book1D("Elec1Eta"   , "eta(Electron1)"        ,  30,  -5.,   5.); 
-    // eta of the 2. leading electron
-    hists_["elec2Eta_"    ] = store_->book1D("Elec2Eta"   , "eta(Electron2)"        ,  30,  -5.,   5.);
-    // eta of the leading muon
-    hists_["muon1Eta_"    ] = store_->book1D("Muon1Eta"   , "eta(Muon1)"            ,  30,  -5.,   5.); 
-    // eta of the 2. leading muon
-    hists_["muon2Eta_"    ] = store_->book1D("Muon2Eta"   , "eta(Muon2)"            ,  30,  -5.,   5.);
-    // calo isolation variable of the leading muon
-    hists_["muon1CalIso_" ] = store_->book1D("Muon1CalIso", "Iso_Cal(Muon1)"        ,  30,   0.,   1.5);
-    // calo isolation variable of the 2. leading muon
-    hists_["muon2CalIso_" ] = store_->book1D("Muon2CalIso", "Iso_Cal(Muon2)"        ,  30,   0.,   1.5);
-    // tracker isolation variable of the leading muon
-    hists_["muon1TrkIso_" ] = store_->book1D("Muon1TrkIso", "Iso_Trk(Muon1)"        ,  30,   0.,   1.5);
-    // tracker isolation variable of the 2. leading muon
-    hists_["muon2TrkIso_" ] = store_->book1D("Muon2TrkIso", "Iso_Trk(Muon2)"        ,  30,   0.,   1.5);
-    // calo isolation variable of the leading electron
-    hists_["elec1CalIso_" ] = store_->book1D("Elec1CalIso", "Iso_Cal(Elec1)"        ,  30,   0.,   1.5);
-    // calo isolation variable of the 2. leading electron
-    hists_["elec2CalIso_" ] = store_->book1D("Elec2CalIso", "Iso_Cal(Elec2)"        ,  30,   0.,   1.5);
-    // tracker isolation variable of the leading electron
-    hists_["elec1TrkIso_" ] = store_->book1D("Elec1TrkIso", "Iso_Trk(Elec1)"        ,  30,   0.,   1.5);
-    // tracker isolation variable of the 2. leading electron
-    hists_["elec2TrkIso_" ] = store_->book1D("Elec2TrkIso", "Iso_Trk(Elec2)"        ,  30,   0.,   1.5);
+    hists_["muonMultIso_" ] = store_->book1D("MuonMultIso" , "N_{iso}(Muon)"          ,  10,   0.,  10.);
+    // eta of the leading lepton
+    hists_["lept1Eta_"    ] = store_->book1D("Lept1Eta"    , "eta(Lepton)"            ,  30,  -5.,   5.); 
+    // eta of the subleading lepton
+    hists_["lept2Eta_"    ] = store_->book1D("Lept2Eta"    , "eta(Lepton2)"           ,  30,  -5.,   5.);
+    // pt of the 2. leading electron
+    hists_["elec1Pt_"     ] = store_->book1D("Elec1Pt"     , "pt(Electron1)"          ,  50,   0., 150.);
+    // pt of the 2. leading electron
+    hists_["elec2Pt_"     ] = store_->book1D("Elec2Pt"     , "pt(Electron2)"          ,  50,   0., 150.);
+    // pt of the leading muon
+    hists_["muon1Pt_"     ] = store_->book1D("Muon1Pt"     , "pt(Muon1)"              ,  50,   0., 150.);
+    // pt of the 2. leading muon
+    hists_["muon2Pt_"     ] = store_->book1D("Muon2Pt"     , "pt(Muon2)"              ,  50,   0., 150.);
+    // pt of the 1. leading jet (corrected to L2+L3)
+    hists_["jet1Pt_"      ] = store_->book1D("Jet1Pt"      , "pt(Jet1)"               ,  50,   0., 200.);   
+    // pt of the 2. leading jet (corrected to L2+L3)
+    hists_["jet2Pt_"      ] = store_->book1D("Jet2Pt"      , "pt(Jet2)"               ,  50,   0., 200.);
+    // MET (PF)
+    hists_["metPflow_"    ] = store_->book1D("METPflow"    , "MET(Pflow)"             ,  50,   0., 200.);
+    // MET (TC)
+    hists_["metTC_"       ] = store_->book1D("METTC"       , "MET(TC)"                ,  50,   0., 200.);
+    // calo isolation of the leading muon
+    hists_["muon1CalIso_" ] = store_->book1D("Muon1CalIso" , "Iso_Cal(Muon1)"         ,  50,   0.,   1.);
+    // calo isolation of the subleading muon
+    hists_["muon2CalIso_" ] = store_->book1D("Muon2CalIso" , "Iso_Cal(Muon2)"         ,  50,   0.,   1.);
+    // track isolation of the leading muon
+    hists_["muon1TrkIso_" ] = store_->book1D("Muon1TrkIso" , "Iso_Trk(Muon1)"         ,  50,   0.,   1.);
+    // track isolation of the subleading muon
+    hists_["muon2TrkIso_" ] = store_->book1D("Muon2TrkIso" , "Iso_Trk(Muon2)"         ,  50,   0.,   1.);
+    // calo isolation of the leading electron
+    hists_["elec1CalIso_" ] = store_->book1D("Elec1CalIso" , "Iso_Cal(Elec1)"         ,  50,   0.,   1.);
+    // calo isolation of the subleading electron
+    hists_["elec2CalIso_" ] = store_->book1D("Elec2CalIso" , "Iso_Cal(Elec2)"         ,  50,   0.,   1.);
+    // track isolation of the leading electron
+    hists_["elec1TrkIso_" ] = store_->book1D("Elec1TrkIso" , "Iso_Trk(Elec1)"         ,  50,   0.,   1.);
+    // track isolation of the subleading electron
+    hists_["elec2TrkIso_" ] = store_->book1D("Elec2TrkIso" , "Iso_Trk(Elec2)"         ,  50,   0.,   1.);
     if( verbosity_==VERBOSE) return;
 
     // --- [DEBUG] --- //
-//     // eta of the leading jet, PF
-//     hists_["jetEtaPF_"    ] = store_->book1D("JetEtaPF"   , "eta(Jet,PF)"           ,  30,  -5.,   5.);             FIXME, particle flow jet collection not implemented yet
-//     // eta of the 2. leading jet, PF
-//     hists_["jet2EtaPF_"   ] = store_->book1D("Jet2EtaPF"  , "eta(Jet2,PF)"          ,  30,  -5.,   5.);
-//      // phi of the leading jet, PF
-//     hists_["jetPhiPF_"    ] = store_->book1D("JetPhiPF"   , "phi(Jet,PF)"           ,  32, -3.2,  3.2); 
-//     // phi of the 2. leading jet, PF
-//     hists_["jet2PhiPF_"   ] = store_->book1D("Jet2PhiPF"   , "phi(Jet2,PF)"          ,  32, -3.2,  3.2);
-//     // multiplicity of jets with pt>30 (corrected to L2+L3, PF)
-//     hists_["jetMultPF_"   ] = store_->book1D("JetMultPF"   , "N_{30}(Jet,PF)"        ,  10,   0.,  10.); 
-//     // sum of charges of 2 leading leptons
-//     hists_["chargeSum_"   ] = store_->book1D("ChargeSum"   , "sum of lept.charges"   ,   5,  -5.,   5.);            FIXME
-    // flavour of 2 leading leptons
-    hists_["evtFlavour_"  ] = store_->book1D("EvtFlavour"  , "flavour of leptons"   ,   3,    0,    3);
-    // deltaR of 2 leading jets
-    hists_["dRJet1Jet2_"  ] = store_->book1D("DRJet1Jet2"  , "deltaR(Jet1,Jet2)"    ,  30,   0.,   5.);
-    // deltaR of 2 leading leptons
-    hists_["dRLep1Lep2_"  ] = store_->book1D("DRLep1Lep2"  , "deltaR(Lept1,Lept2)"  ,  30,   0.,   5.);
-    // deltaR of 1. lepton and 1. jet
-    hists_["dRJet1Lep1_"  ] = store_->book1D("DRJet1Lep1"  , "deltaR(Jet1,Lept1)"   ,  32,   0.,  3.2);
-    // deltaR of 1. lepton and MET
-    hists_["dRLep1MET_"   ] = store_->book1D("DRLep1MET"   , "deltaR(Lept1,MET)"    ,  32,   0.,  3.2);
-    // deltaR of 1. jet and MET
-    hists_["dRJet1MET_"   ] = store_->book1D("DRJet1MET"   , "deltaR(Jet1,MET)"     ,  32,   0.,  3.2);
+    // eta of the leading jet
+    hists_["jet1Eta_"     ] = store_->book1D("Jet1Eta"     , "eta(Jet)"               ,  30,  -5.,   5.); 
+    // eta of the 2. leading jet
+    hists_["jet2Eta_"     ] = store_->book1D("Jet2Eta"     , "eta(Jet2)"              ,  30,  -5.,   5.);
+    // pt of the 1. leading jet (not corrected)
+    hists_["jet1PtRaw_"   ] = store_->book1D("Jet1PtRaw"   , "pt(Jet1,raw)"           ,  50,   0., 150.);   
+    // pt of the 2. leading jet (not corrected)     
+    hists_["jet2PtRaw_"   ] = store_->book1D("Jet2PtRaw"   , "pt(Jet2,raw)"           ,  50,   0., 150.);
+    // deltaR between the 2 leading jets
+    hists_["dRJet1Jet2_"  ] = store_->book1D("DRJet1Jet2"  , "deltaR(Jet1,Jet2)"      ,  30,   0.,   5.);
+    // deltaR between the 2 leading leptons
+    hists_["dRLep1Lep2_"  ] = store_->book1D("DRLep1Lep2"  , "deltaR(Lept1,Lept2)"    ,  30,   0.,   5.);
+    // deltaR between the lepton and the leading jet
+    hists_["dRJet1Lep1_"  ] = store_->book1D("DRJet1Lep1"  , "deltaR(Jet1,Lept1)"     ,  30,   0.,   3.);
+    // deltaR between the lepton and MET
+    hists_["dRLep1MET_"   ] = store_->book1D("DRLep1MET"   , "deltaR(Lept1,MET)"      ,  30,   0.,   3.);
+    // deltaR between leading jet and MET
+    hists_["dRJet1MET_"   ] = store_->book1D("DRJet1MET"   , "deltaR(Jet1,MET)"       ,  30,   0.,   3.);
     // deltaPhi of 2 leading jets
-    hists_["dPhiJet1Jet2_"] = store_->book1D("DPhiJet1Jet2", "deltaPhi(Jet1,Jet2)"  ,  32,   0.,  3.2);
+    hists_["dPhiJet1Jet2_"] = store_->book1D("DPhiJet1Jet2", "deltaPhi(Jet1,Jet2)"    ,  32,   0.,  3.2);
     // deltaPhi of 2 leading leptons
-    hists_["dPhiLep1Lep2_"] = store_->book1D("DPhiLep1Lep2", "deltaPhi(Lept1,Lept2)",  32,   0.,  3.2);
+    hists_["dPhiLep1Lep2_"] = store_->book1D("DPhiLep1Lep2", "deltaPhi(Lept1,Lept2)"  ,  32,   0.,  3.2);
     // deltaPhi of 1. lepton and 1. jet
-    hists_["dPhiJet1Lep1_"] = store_->book1D("DPhiJet1Lep1", "deltaPhi(Jet1,Lept1)" ,  32,   0.,  3.2);
+    hists_["dPhiJet1Lep1_"] = store_->book1D("DPhiJet1Lep1", "deltaPhi(Jet1,Lept1)"   ,  32,   0.,  3.2);
     // deltaPhi of 1. lepton and MET
-    hists_["dPhiLep1MET_" ] = store_->book1D("DPhiLep1MET" , "deltaPhi(Lept1,MET)"  ,  32,   0.,  3.2);
+    hists_["dPhiLep1MET_" ] = store_->book1D("DPhiLep1MET" , "deltaPhi(Lept1,MET)"    ,  32,   0.,  3.2);
     // deltaPhi of 1. jet and MET
-    hists_["dPhiJet1MET_" ] = store_->book1D("DPhiJet1MET" , "deltaPhi(Jett1,MET)"  ,  32,   0.,  3.2);
+    hists_["dPhiJet1MET_" ] = store_->book1D("DPhiJet1MET" , "deltaPhi(Jett1,MET)"    ,  32,   0.,  3.2);
     return;
   }
 
   void 
   MonitorEnsemble::fill(const edm::Event& event, const edm::EventSetup& setup) const
   {
-    // lepton pt to find lepton pair to use
-    double ptMuon1=0.,ptMuon2=0.,ptElec1=0.,ptElec2=0.;
-    // define variables to hold angular information of leptons and jets
-    double phiJet1=0.,etaJet1=0.,phiJet2=0.,etaJet2=0.,phiElec1=0.,etaElec1=0.,phiElec2=0.,etaElec2=0.,phiMuon1=0.,etaMuon1=0.,phiMuon2=0.,etaMuon2=0.,phiMET=0.,etaMET=0.;
-    // electron and muon multiplicities to calculate N(Leptons)
-    unsigned int nElec=0,nElecIso=0,nMuon=0,nMuonIso=0;
+    // buffer for MET
+    LorentzVector metBuffer;
+    // buffer for information on lepton isolation
+    std::vector<bool> leptonIsolation; 
+    // buffer for the two leading jets/electrons/muons
+    std::vector<LorentzVector> leadingJets, leadingElecs, leadingMuons;
 
     // load jet corrector if configured such
     const JetCorrector* corrector=0;
@@ -206,13 +205,13 @@ namespace TopDiLeptonOffline {
     }
     // fill monitoring plots for jets
     edm::Handle<edm::View<reco::Jet> > jets;
-    event.getByLabel(jets_, jets); fill(*jets, event, corrector, phiJet1, etaJet1, phiJet2, etaJet2);
-    // fill monitoring plots for electrons
-    edm::Handle<edm::View<reco::GsfElectron> > elecs;
-    event.getByLabel(elecs_, elecs); fill(*elecs, event, phiElec1, etaElec1, phiElec2, etaElec2, ptElec1, ptElec2, nElec, nElecIso);
+    event.getByLabel(jets_, jets); fill(*jets, event, corrector, leadingJets);
     // fill monitoring plots for muons
     edm::Handle<edm::View<reco::Muon> > muons;
-    event.getByLabel(muons_, muons); fill(*muons, phiMuon1, etaMuon1, phiMuon2, etaMuon2, ptMuon1, ptMuon2, nMuon, nMuonIso);
+    event.getByLabel(muons_, muons); fill(*muons, leadingMuons, leptonIsolation);
+    // fill monitoring plots for electrons
+    edm::Handle<edm::View<reco::GsfElectron> > elecs;
+    event.getByLabel(elecs_, elecs); fill(*elecs, event, leadingElecs, leptonIsolation);
 
     // fill monitoring histograms for met
     for(std::vector<edm::InputTag>::const_iterator met_=mets_.begin(); met_!=mets_.end(); ++met_){
@@ -220,202 +219,236 @@ namespace TopDiLeptonOffline {
       event.getByLabel(*met_, met);
       if(met->begin()!=met->end()){
 	unsigned int idx=met_-mets_.begin();
-	if(idx==0) {fill("metCalo_" , met->begin()->et()); phiMET = met->begin()->phi(); etaMET = met->begin()->eta();}
-	// store angular info only for Calo MET
-	if(idx==1) fill("metTC_"   , met->begin()->et());
-	if(idx==2) fill("metPflow_", met->begin()->et());
+	// store p4 info in addition for CaloMET
+	if(idx==0){ fill("metCalo_" , met->begin()->et());
+	  metBuffer = met->begin()->p4(); 
+	}
+	if(idx==1){ fill("metTC_"   , met->begin()->et());}
+	if(idx==2){ fill("metPflow_", met->begin()->et());}
       }
     }
-    // fill monitoring plots using multiple collections
-    fill(phiJet1,etaJet1,phiJet2,etaJet2,phiElec1,etaElec1,phiElec2,etaElec2,phiMuon1,etaMuon1,phiMuon2,etaMuon2,phiMET,etaMET,ptElec1,ptElec2,ptMuon1,ptMuon2,nElec,nElecIso,nMuon,nMuonIso);
+
+    // lepton multiplicity is the size of leptonIsolation
+    fill("leptMult_"    , leptonIsolation.size() );
+    // isolated lepton multipicity is the number of counted 
+    // *isolated* (i.e. true) occurences in leptonIsolation
+    fill("leptMultIso_" , std::count(leptonIsolation.begin(), leptonIsolation.end(), true) );
+    // angles between jets and MET
+    if( leadingJets.size()>1 ){
+      fill("dPhiJet1Jet2_" , reco::deltaPhi(leadingJets[0].phi(), leadingJets[1].phi()));
+      fill("dPhiJet1MET_"  , reco::deltaPhi(leadingJets[0].phi(), metBuffer.phi()));
+      fill("dRJet1Jet2_"   , reco::deltaR  (leadingJets[0], leadingJets[1]));
+      fill("dRJet1MET_"    , reco::deltaR  (leadingJets[0], metBuffer));
+    }
+    // lepton monitoring for ELECMUON type decays    
+    if(decayChannel(leadingMuons, leadingElecs)==ELECMUON){
+      // fill plots for leptons depending
+      // on which is the leading lepton 
+      if( leadingElecs[0].pt()>leadingMuons[0].pt() )
+	fill(leadingElecs[0], leadingMuons[0], leadingJets[0], metBuffer);
+      else{
+	fill(leadingMuons[0], leadingElecs[0], leadingJets[0], metBuffer);
+      }
+      if(!triggerTable_.label().empty()){
+	// fill plots for trigger monitoring
+	edm::Handle<edm::TriggerResults> triggerTable;
+	event.getByLabel(triggerTable_, triggerTable);
+	fill(*triggerTable, leadingElecs[0], leadingMuons[0]);
+      }
+      fill("decayChannel_", 0.5); 
+    }
+    // lepton monitoring for DIMUON type decays   
+    if(decayChannel(leadingMuons, leadingElecs)==DIMUON){
+      fill("decayChannel_", 1.5); 
+      fill(leadingMuons, leadingJets[0], metBuffer);
+    }
+    // lepton monitoring for DIELEC type decays   
+    if(decayChannel(leadingMuons, leadingElecs)==DIELEC){
+      fill("decayChannel_", 2.5); 
+      fill(leadingElecs, leadingJets[0], metBuffer);
+    }
+  }
+
+  void 
+  MonitorEnsemble::fill(const edm::TriggerResults& triggerTable, const LorentzVector& leptonA, const LorentzVector& leptonB) const
+  {
+    for(unsigned int iTrigger=0; iTrigger<triggerPaths_.size(); ++iTrigger){
+      if( accept(triggerTable, monitorPath(triggerPaths_[iTrigger])) ){
+	if( (leptonA+leptonB).mass()>60 ){
+	  fill("triggerMon_", iTrigger+0.5 );
+	  if(accept(triggerTable, selectionPath(triggerPaths_[iTrigger]))){
+	    fill("triggerSel_", iTrigger+0.5 );
+	  }
+	}
+      }
+    }
+  }
+
+  void 
+  MonitorEnsemble::fill(const std::vector<LorentzVector>& leptons, const LorentzVector& leadingJet, const LorentzVector& met) const
+  {
+    fill("dPhiLep1Lep2_"   , reco::deltaPhi(leptons[0].phi(),leptons[1].phi()));
+    fill("dPhiJet1Lep1_"   , reco::deltaPhi(leptons[0].phi(),leadingJet.phi()));
+    fill("dPhiLep1MET_"    , reco::deltaPhi(leptons[0].phi(),met.phi()));
+    fill("dRLep1Lep2_"     , reco::deltaR(leptons[0],leptons[1]));
+    fill("dRJet1Lep1_"     , reco::deltaR(leptons[0],leadingJet));
+    fill("dRLep1MET_"      , reco::deltaR(leptons[0],met));
+    fill("lept1Pt_"        , leptons[0].pt ());
+    fill("lept1Eta_"       , leptons[0].eta());
+    fill("lept2Pt_"        , leptons[1].pt ());
+    fill("lept2Eta_"       , leptons[1].eta());
+  }
+
+  void MonitorEnsemble::
+  fill(const LorentzVector& leadingLepton, const LorentzVector& subleadingLepton, const LorentzVector& leadingJet, const LorentzVector& met) const
+  {
+    fill("dPhiLep1Lep2_"   , reco::deltaPhi(leadingLepton.phi(), subleadingLepton.phi()));
+    fill("dPhiJet1Lep1_"   , reco::deltaPhi(leadingLepton.phi(), leadingJet.phi()));
+    fill("dPhiLep1MET_"    , reco::deltaPhi(leadingLepton.phi(), met.phi()));
+    fill("dRLep1Lep2_"     , reco::deltaR(leadingLepton, subleadingLepton));
+    fill("dRJet1Lep1_"     , reco::deltaR(leadingLepton, leadingJet));
+    fill("dRLep1MET_"      , reco::deltaR(leadingLepton, met));
+    fill("lept1Pt_"        , leadingLepton.pt ());
+    fill("lept1Eta_"       , leadingLepton.eta());
+    fill("lept2Pt_"        , subleadingLepton.pt ());
+    fill("lept2Eta_"       , subleadingLepton.eta());
   }
 
   void
-  MonitorEnsemble::fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const JetCorrector* corrector, double& phiJet1, double& etaJet1, double& phiJet2, double& etaJet2) const 
+  MonitorEnsemble::fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const JetCorrector* corrector, std::vector<LorentzVector>& leadingJetBuffer) const 
   {
     // loop jet collection
     unsigned int mult=0, mult30=0;
     for(edm::View<reco::Jet>::const_iterator jet=jets.begin(); jet!=jets.end(); ++jet, ++mult){
-      // determine raw jet pt
-      double ptRaw  = jet->pt();
-      // determine corrected jet pt
-      double ptL2L3 = jet->pt();
-      if(corrector){
-	ptL2L3 *= corrector->correction(*jet);
-      }
-      if(ptL2L3>30) {++mult30;} // determine jet multiplicity
-      // fill pt (raw or L2L3) and store eta and phi for the leading two jets
+      // determie jet correction scale
+      reco::Jet correctedJet=*jet; correctedJet.scaleEnergy(corrector ?  corrector->correction(*jet) : 1.);
+      if(correctedJet.pt()>30) {++mult30;} // determine jet multiplicity
+      // fill monitor plots for leading and sub-leading jet and buffer for later use
       if(mult==0) {
-	fill("jet1Pt_"   , ptL2L3);
-	fill("jet1PtRaw_", ptRaw );
-	phiJet1 = jet->phi();
-	etaJet1 = jet->eta();
-	fill("jetEta_"   , phiJet1);
-	fill("jetPhi_"   , etaJet1);
+	// add leading jet to buffer
+	leadingJetBuffer.push_back(correctedJet.p4());
+	fill("jet1Pt_"    , correctedJet.pt());
+	fill("jet1PtRaw_" , jet->pt() );
+	fill("jetEta_"    , jet->eta());
       }
       if(mult==1) {
-	fill("jet2Pt_"   , ptL2L3);
-	fill("jet2PtRaw_", ptRaw );
-      	phiJet2 = jet->phi();
-	etaJet2 = jet->eta();
-	fill("jet2Eta_"   , phiJet2);
-	fill("jet2Phi_"   , etaJet2);
+	// add second leading jet to buffer
+	leadingJetBuffer.push_back(correctedJet.p4());
+	fill("jet2Pt_"    , correctedJet.pt());
+	fill("jet2PtRaw_" , jet->pt() );
+	fill("jet2Eta_"   , jet->eta());
       }
     }
-    fill("jetMult_"    , mult30    );
+    fill("jetMult_", mult30);
   }
 
   void
-  MonitorEnsemble::fill(const edm::View<reco::GsfElectron>& elecs, const edm::Event& event, double& phiElec1, double& etaElec1, double& phiElec2, double& etaElec2, double& ptElec1, double& ptElec2, unsigned int& nElec, unsigned int& nElecIso) const
+  MonitorEnsemble::fill(const edm::View<reco::GsfElectron>& elecs, const edm::Event& event, std::vector<LorentzVector>& leadingElecBuffer, std::vector<bool>& leptonIsolationBuffer) const
   {
     // check availability of electron id
     edm::Handle<edm::ValueMap<float> > electronId; 
     if(!electronId_.label().empty()) event.getByLabel(electronId_, electronId);
+    // buffer for isolated electrons for 
+    // invariant mass plot
+    std::vector<reco::GsfElectron> isolatedElectrons;
 
     // loop electron collection
-    for(edm::View<reco::GsfElectron>::const_iterator elec=elecs.begin(); elec!=elecs.end(); ++elec, ++nElec){
-      if( electronId_.label().empty() ? true : (*electronId)[elecs.refAt(nElec)]>0.99 ){
+    unsigned int mult=0, multIso=0;
+    for(edm::View<reco::GsfElectron>::const_iterator elec=elecs.begin(); elec!=elecs.end(); ++elec, ++mult){
+      if( electronId_.label().empty() ? true : (*electronId)[elecs.refAt(mult)]>0.99 ){
 	// restrict to electrons with good electronId
-	double relCaloIso = elec->pt()/(elec->pt()+elec->dr04EcalRecHitSumEt()+elec->dr04HcalTowerSumEt());
-	double relTrkIso = elec->pt()/(elec->pt()+elec->dr03TkSumPt());
-	if( nElec==0 ){
-	  fill("elec1Pt_" , elec->pt() );
-	  fill("elec1Eta_", elec->eta());
-	  fill("elec1CalIso_" , relCaloIso);
-	  fill("elec1TrkIso_" , relTrkIso);
-	  phiElec1 = elec->phi();
-	  etaElec1 = elec->eta();
-	  ptElec1  = elec->pt();
+	double isolationCalo  = elec->pt()/(elec->pt()+elec->dr04EcalRecHitSumEt()+elec->dr04HcalTowerSumEt());
+	double isolationTrack = elec->pt()/(elec->pt()+elec->dr03TkSumPt());
+	// fill monitor plots for leading and sub-leading 
+	// electron and buffer for later use
+	if( mult==0 ){
+	  leadingElecBuffer.push_back(elec->p4() );
+	  fill("elec1Pt_"    , elec->pt () );
+	  fill("elec1CalIso_", isolationCalo );
+	  fill("elec1TrkIso_", isolationTrack);
 	}
-	if( nElec==1 ){
-	  fill("elec2Pt_" , elec->pt() );
-	  fill("elec2Eta_", elec->eta());
-	  fill("elec2CalIso_" , relCaloIso);
-	  fill("elec2TrkIso_" , relTrkIso);
-	  phiElec2 = elec->phi();
-	  etaElec2 = elec->eta();
-	  ptElec2  = elec->pt();
+	if( mult==1 ){
+	  leadingElecBuffer.push_back(elec->p4() );
+	  fill("elec2Pt_"    , elec->pt () );
+	  fill("elec2CalIso_", isolationCalo );
+	  fill("elec2TrkIso_", isolationTrack);
 	}
-	if( relCaloIso>0.8 && relTrkIso>0.9 ){
-	  ++nElecIso;
+	if( isolationCalo>0.8 && isolationTrack>0.9 ){
+	  leptonIsolationBuffer.push_back(true);
+	  isolatedElectrons.push_back(*elec);
+	  ++multIso;
+	}
+	else{	
+	  leptonIsolationBuffer.push_back(false);
+
 	}
       }
     }
-    fill("elecMult_",    nElec   );
-    fill("elecMultIso_", nElecIso);
+    fill("elecMultIso_", multIso);
+    // fill invariant mass plots
+    if(isolatedElectrons.size()>1){
+      if(isolatedElectrons[0].charge()*isolatedElectrons[1].charge()<0){
+	fill("invMass_", (isolatedElectrons[0].p4()+isolatedElectrons[1].p4()).mass() );
+	fill("invMassLog_", log10( (isolatedElectrons[0].p4()+isolatedElectrons[1].p4()).mass() ));
+	
+      }
+      else{
+	fill("invMassWC_", (isolatedElectrons[0].p4()+isolatedElectrons[1].p4()).mass() );
+	fill("invMassWCLog_", log10( (isolatedElectrons[0].p4()+isolatedElectrons[1].p4()).mass() ));
+      }
+    }
   }
 
   void
-  MonitorEnsemble::fill(const edm::View<reco::Muon>& muons, double& phiMuon1, double& etaMuon1, double& phiMuon2, double& etaMuon2, double& ptMuon1, double& ptMuon2, unsigned int& nMuon, unsigned int& nMuonIso) const 
+  MonitorEnsemble::fill(const edm::View<reco::Muon>& muons, std::vector<LorentzVector>& leadingMuonBuffer, std::vector<bool>& leptonIsolationBuffer) const 
   {
+    // buffer for isolated electrons for 
+    // invariant mass plot
+    std::vector<reco::Muon> isolatedMuons;
+
     // loop muon collection
-    for(edm::View<reco::Muon>::const_iterator muon=muons.begin(); muon!=muons.end(); ++muon, ++nMuon){
+    unsigned int mult=0, multIso=0;
+    for(edm::View<reco::Muon>::const_iterator muon=muons.begin(); muon!=muons.end(); ++muon, ++mult){
       if( muon->combinedMuon().isNull()==0 ){ 
 	// restrict to globalMuons
-	double relCaloIso = muon->pt()/(muon->pt()+muon->isolationR03().emEt+muon->isolationR03().hadEt);
-	double relTrkIso  = muon->pt()/(muon->pt()+muon->isolationR03().sumPt);
-	if( nMuon==0 ){
-	  fill("muon1Pt_"      , muon->pt() );
-	  fill("muon1Eta_"     , muon->eta());
-	  fill("muon1CalIso_" , relCaloIso);
-	  fill("muon1TrkIso_" , relTrkIso);
-	  phiMuon1 = muon->phi();
-	  etaMuon1 = muon->eta();
-	  ptMuon1  = muon->pt();
+	double isolationCalo  = muon->pt()/(muon->pt()+muon->isolationR03().emEt+muon->isolationR03().hadEt);
+	double isolationTrack = muon->pt()/(muon->pt()+muon->isolationR03().sumPt);
+	if( mult==0 ){
+	  leadingMuonBuffer.push_back(muon->p4() );
+	  fill("muon1Pt_"     , muon->pt () );
+	  fill("muon1CalIso_" , isolationCalo );
+	  fill("muon1TrkIso_" , isolationTrack);
 	}
-	if( nMuon==1 ){
-	  fill("muon2Pt_"      , muon->pt() );
-	  fill("muon2Eta_"     , muon->eta());
-	  fill("muon2CalIso_" , relCaloIso);
-	  fill("muon2TrkIso_" , relTrkIso);
-	  phiMuon2 = muon->phi();
-	  etaMuon2 = muon->eta();
-	  ptMuon2  = muon->pt();
+	if( mult==1 ){
+	  leadingMuonBuffer.push_back(muon->p4() );
+	  fill("muon2Pt_"     , muon->pt () );
+	  fill("muon2CalIso_" , isolationCalo );
+	  fill("muon2TrkIso_" , isolationTrack);
 	}
-	if( relCaloIso>0.9 && relTrkIso>0.9 ){
-	  ++nMuonIso;
+	if( isolationCalo>0.9 && isolationTrack>0.9 ){
+	  leptonIsolationBuffer.push_back(true);
+	  isolatedMuons.push_back(*muon);
+	  ++multIso;
+	}
+	else{
+	  leptonIsolationBuffer.push_back(false);
 	}
       }
     }
-    fill("muonMult_",    nMuon   );
-    fill("muonMultIso_", nMuonIso);
+    fill("muonMultIso_", multIso);
+    // fill invariant mass plots
+    if(isolatedMuons.size()>1){
+      if(isolatedMuons[0].charge()*isolatedMuons[1].charge()<0){
+	fill("invMass_", (isolatedMuons[0].p4()+isolatedMuons[1].p4()).mass() );
+	fill("invMassLog_", log10( (isolatedMuons[0].p4()+isolatedMuons[1].p4()).mass() ));
+      }
+      else{
+	fill("invMassWC_", (isolatedMuons[0].p4()+isolatedMuons[1].p4()).mass() );
+	fill("invMassWCLog_", log10( (isolatedMuons[0].p4()+isolatedMuons[1].p4()).mass() ));
+      }
+    }
   }
   
-  void
-  MonitorEnsemble::fill( double& phiJet1, double& etaJet1, double& phiJet2, double& etaJet2, double& phiElec1, double& etaElec1, double& phiElec2, double& etaElec2, double& phiMuon1, double& etaMuon1, double& phiMuon2, double& etaMuon2, double& phiMET, double& etaMET, double& ptElec1, double& ptElec2, double& ptMuon1, double& ptMuon2, unsigned int& nElec, unsigned int& nElecIso, unsigned int& nMuon, unsigned int& nMuonIso ) const
-  {
-    fill("leptMult_"    , nMuon+nElec       );
-    fill("leptMultIso_" , nMuonIso+nElecIso );
-
-    // fill angles of jet and MET
-    if( phiJet1 && phiJet2 && etaJet1 && etaJet2 && phiMET && etaMET){
-      fill("dPhiJet1Jet2_"   , deltaPhi(phiJet1,phiJet2)               );
-      fill("dRJet1Jet2_"     , deltaR(etaJet1,phiJet1,etaJet2,phiJet2) );
-      fill("dPhiJet1MET_"     , deltaPhi(phiJet1,phiMET)                );
-      fill("dRJet1MET_"       , deltaR(etaJet1,phiJet1,etaMET,phiMET)   );
-    }
-
-    // decide which lepton pair to use
-    if( ptMuon1 && ptMuon2 && ptMuon2 > ptElec1 ){  // muon-muon event
-      fill("dRLep1Lep2_"     , deltaR(etaMuon1,phiMuon1,etaMuon2,phiMuon2) );
-      fill("dRJet1Lep1_"     , deltaR(etaJet1,phiJet1,etaMuon1,phiMuon1)   );
-      fill("dRLep1MET_"      , deltaR(etaMuon1,phiMuon1,etaMET,phiMET)     );
-      fill("dPhiLep1Lep2_"   , deltaPhi(phiMuon1,phiMuon2)                 );
-      fill("dPhiJet1Lep1_"   , deltaPhi(phiJet1,phiMuon1)                  );
-      fill("dPhiLep1MET_"    , deltaPhi(phiMuon1,phiMET)                   );
-      fill("evtFlavour_"     , 0                                           ); // evtFlavour = 0 is muon-muon event
-      fill("leptPt_"         , ptMuon1                                     );
-      fill("lept2Pt_"        , ptMuon2                                     );
-      fill("leptEta_"        , etaMuon1                                    );
-      fill("lept2Eta_"       , etaMuon2                                    );
-      fill("leptPhi_"        , phiMuon1                                    );
-      fill("lept2Phi_"       , phiMuon2                                    );
-    }
-    else if( ptElec1 && ptElec2 && ptElec2 > ptMuon1 ){  // electron-electron event
-      fill("dRLep1Lep2_"     , deltaR(etaElec1,phiElec1,etaElec2,phiElec2) );
-      fill("dRJet1Lep1_"     , deltaR(etaJet1,phiJet1,etaElec1,phiElec1)   );
-      fill("dRLep1MET_"      , deltaR(etaElec1,phiElec1,etaMET,phiMET)     );
-      fill("dPhiLep1Lep2_"   , deltaPhi(phiElec1,phiElec2)                 );
-      fill("dPhiJet1Lep1_"   , deltaPhi(phiJet1,phiElec1)                  );
-      fill("dPhiLep1MET_"    , deltaPhi(phiElec1,phiMET)                   );
-      fill("evtFlavour_"     , 1                                           ); // evtFlavour = 1 is electron-electron event
-      fill("leptPt_"         , ptElec1                                     );
-      fill("lept2Pt_"        , ptElec2                                     );
-      fill("leptEta_"        , etaElec1                                    );
-      fill("lept2Eta_"       , etaElec2                                    );
-      fill("leptPhi_"        , phiElec1                                    );
-      fill("lept2Phi_"       , phiElec2                                    );
-    }
-    else if( ptElec1 && ptMuon1 ){  // electron-muon event
-      fill("evtFlavour_"     , 2                                           ); // evtFlavour = 2 is electron-muon event
-      fill("dRLep1Lep2_"     , deltaR(etaElec1,phiElec1,etaMuon1,phiMuon1) );
-      fill("dPhiLep1Lep2_"   , deltaPhi(phiElec1,phiMuon1)                 );
-      if ( ptElec1 > ptMuon1 ){
-	fill("dRJet1Lep1_"     , deltaR(etaJet1,phiJet1,etaElec1,phiElec1)   );
-	fill("dRLep1MET_"      , deltaR(etaElec1,phiElec1,etaMET,phiMET)     );
-	fill("dPhiJet1Lep1_"   , deltaPhi(phiJet1,phiElec1)                  );
-	fill("dPhiLep1MET_"    , deltaPhi(phiElec1,phiMET)                   );
-	fill("leptPt_"         , ptElec1                                     );
-	fill("leptEta_"        , etaElec1                                    );
-	fill("leptPhi_"        , phiElec1                                    );
-	fill("lept2Pt_"        , ptMuon1                                     );
-	fill("lept2Eta_"       , etaMuon1                                    );
-	fill("lept2Phi_"       , phiMuon1                                    );
-      }
-      if ( ptElec1 < ptMuon1 ){
-	fill("dRJet1Lep1_"     , deltaR(etaJet1,phiJet1,etaMuon1,phiMuon1)   );
-	fill("dRLep1MET_"      , deltaR(etaMuon1,phiMuon1,etaMET,phiMET)     );
-	fill("dPhiJet1Lep1_"   , deltaPhi(phiJet1,phiMuon1)                  );
-	fill("dPhiLep1MET_"    , deltaPhi(phiMuon1,phiMET)                   );
-	fill("leptPt_"         , ptMuon1                                     );
-	fill("leptEta_"        , etaMuon1                                    );
-	fill("leptPhi_"        , phiMuon1                                    );
-	fill("lept2Pt_"        , ptElec1                                     );
-	fill("lept2Eta_"       , etaElec1                                    );
-	fill("lept2Phi_"       , phiElec1                                    );
-      }
-    }
-  }
 }
 
 TopDiLeptonOfflineDQM::TopDiLeptonOfflineDQM(const edm::ParameterSet& cfg): triggerTable_(""), beamspot_("") 
@@ -431,6 +464,12 @@ TopDiLeptonOfflineDQM::TopDiLeptonOfflineDQM(const edm::ParameterSet& cfg): trig
     edm::ParameterSet beamspot=presel.getParameter<edm::ParameterSet>("beamspot");
     beamspot_= beamspot.getParameter<edm::InputTag>("src");
     beamspotSelect_= new StringCutObjectSelector<reco::BeamSpot>(beamspot.getParameter<std::string>("select"));
+  }
+  if( presel.existsAs<edm::ParameterSet>("muons" ) ){
+    preselMuon_=presel.getParameter<edm::ParameterSet>("muons");
+  }
+  if( presel.existsAs<edm::ParameterSet>("elecs" ) ){
+    preselElec_=presel.getParameter<edm::ParameterSet>("elecs");
   }
 
   // conifgure the selection
@@ -454,6 +493,15 @@ TopDiLeptonOfflineDQM::analyze(const edm::Event& event, const edm::EventSetup& s
     event.getByLabel(beamspot_, beamspot);
     if(!(*beamspotSelect_)(*beamspot)) return;
   }
+  if(!preselMuon_.empty()){
+    SelectionStep<reco::Muon> step(preselMuon_);
+    if(!step.select(event)) return;
+  }
+  if(!preselElec_.empty()){
+    SelectionStep<reco::GsfElectron> step(preselElec_);
+    if(!step.select(event)) return;
+  }
+
   // apply selection steps
   for(std::vector<std::string>::const_iterator selIt=selectionOrder_.begin(); selIt!=selectionOrder_.end(); ++selIt){
     std::string key = selectionStep(*selIt), type = objectType(*selIt);

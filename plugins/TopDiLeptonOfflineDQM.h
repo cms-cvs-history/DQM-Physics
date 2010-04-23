@@ -8,13 +8,14 @@
 #include "DQMServices/Core/interface/DQMStore.h"
 #include "DQMServices/Core/interface/MonitorElement.h"
 
+#include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/JetReco/interface/Jet.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/METReco/interface/CaloMET.h"
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
-#include "DataFormats/Math/interface/deltaR.h"
+
 
 
 /**
@@ -40,6 +41,11 @@ namespace TopDiLeptonOffline {
   public:
     /// different verbosity levels
     enum Level{ STANDARD, VERBOSE, DEBUG };
+    /// make clear which LorentzVector to use
+    /// for jet, electrons and muon buffering
+    typedef reco::LeafCandidate::LorentzVector LorentzVector;
+    /// different decay channels
+    enum DecayChannel{ NONE, DIMUON, DIELEC, ELECMUON };
     
   public:
     /// default contructor
@@ -47,24 +53,40 @@ namespace TopDiLeptonOffline {
     /// default destructor
     ~MonitorEnsemble(){};
     
-    /// book histograms
-    void book();
+    /// book histograms in subdirectory _directory_
+    void book(std::string directory);
     /// fill monitor histograms with electronId and jetCorrections
     void fill(const edm::Event& event, const edm::EventSetup& setup) const;
 
   private:
+    /// deduce monitorPath from label, the label is expected
+    /// to be of type 'monitorPath:selectionPath'
+    std::string monitorPath(const std::string& label) const { return label.substr(0, label.find(':')); };  
+    /// deduce selectionPath from label, the label is 
+    /// expected to be of type 'monitorPath:selectionPath' 
+    std::string selectionPath(const std::string& label) const { return label.substr(label.find(':')+1); };  
+    /// determine dileptonic decay channel 
+    DecayChannel decayChannel(const std::vector<LorentzVector>& muons, const std::vector<LorentzVector>& elecs) const;
+
     /// check if histogram was booked
     bool booked(const std::string histName) const { return hists_.find(histName.c_str())!=hists_.end(); };
     /// fill histogram if it had been booked before
     void fill(const std::string histName, double value) const { if(booked(histName.c_str())) hists_.find(histName.c_str())->second->Fill(value); };
-    /// fill jet histograms
-    void fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const JetCorrector* corrector, double& phiJet1, double& etaJet1, double& phiJet2, double& etaJet2) const;
-    /// fill electron histograms
-    void fill(const edm::View<reco::GsfElectron>& elecs, const edm::Event& event, double& phiElec1, double& etaElec1, double& phiElec2, double& etaElec2, double& ptElec1, double& ptElec2, unsigned int& nElec, unsigned int& nElecIso) const;
+
+    /// fill trigger monitoring histograms
+    void fill(const edm::TriggerResults& triggerTable, const LorentzVector& leptonA, const LorentzVector& leptonB) const;
+    /// fill common set of histograms for lepton pairs with same flavor
+    void fill(const std::vector<LorentzVector>& leptons, const LorentzVector& leadingJet, const LorentzVector& met) const;
+    /// fill common set of histograms for lepton pairs with different flavor
+    void fill(const LorentzVector& leadingLepton, const LorentzVector& subleadingLepton, const LorentzVector& leadingJet, const LorentzVector& met) const;
+
     /// fill muon histograms
-    void fill(const edm::View<reco::Muon>& muons, double& phiMuon1, double& etaMuon1, double& phiMuon2, double& etaMuon2, double& ptMuon1, double& ptMuon2, unsigned int& nMuon, unsigned int& nMuonIso) const;
-    /// fill histograms including differing objects
-    void fill(double& phiJet1, double& etaJet1, double& phiJet2, double& etaJet2, double& phiElec1, double& etaElec1, double& phiElec2, double& etaElec2, double& phiMuon1, double& etaMuon1, double& phiMuon2, double& etaMuon2, double& phiMET, double& etaMET, double& ptElec1, double& ptElec2, double& ptMuon1, double& ptMuon2, unsigned int& nElec, unsigned int& nElecIso, unsigned int& nMuon, unsigned int& nMuonIso) const;
+    void fill(const edm::View<reco::Muon>& muons, std::vector<LorentzVector>& leadingMuonBuffer, std::vector<bool>& leptonIsolationBuffer) const;
+    /// fill jet histograms
+    void fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const JetCorrector* corrector, std::vector<LorentzVector>& leadingJetBuffer) const;
+    /// fill electron histograms
+    void fill(const edm::View<reco::GsfElectron>& elecs, const edm::Event& event, std::vector<LorentzVector>& leadingElectronBuffer, std::vector<bool>& leptonIsolationBuffer) const;
+
   private:
     /// verbosity level for booking
     Level verbosity_;
@@ -78,6 +100,11 @@ namespace TopDiLeptonOffline {
     edm::InputTag electronId_;
     /// jetCorrector
     std::string jetCorrector_;
+    /// trigger table
+    edm::InputTag triggerTable_;
+    /// trigger paths for monitoring, expected 
+    /// to be of form signalPath:MonitorPath
+    std::vector<std::string> triggerPaths_;
 
     /// storage manager
     DQMStore* store_;
@@ -85,6 +112,18 @@ namespace TopDiLeptonOffline {
     std::map<std::string,MonitorElement*> hists_;
   };
 
+  inline MonitorEnsemble::DecayChannel
+  MonitorEnsemble::decayChannel(const std::vector<LorentzVector>& muons, const std::vector<LorentzVector>& elecs) const 
+  {
+    DecayChannel type=NONE;
+    if( !elecs.empty() && !muons.empty() ){
+      if( muons.size()>1 && muons[1].pt()>elecs[0].pt() ){ type=DIMUON; }
+      else if( elecs.size()>1 && elecs[1].pt()>muons[0].pt() ){ type=DIELEC; }
+      else{ type=ELECMUON; }
+    }
+    return type;
+  } 
+  
 }
 
 #include <utility>
@@ -155,6 +194,8 @@ class TopDiLeptonOfflineDQM : public edm::EDAnalyzer  {
   edm::InputTag beamspot_;
   /// string cut selector
   StringCutObjectSelector<reco::BeamSpot>* beamspotSelect_;
+  /// parameters for muon/electron preselection
+  edm::ParameterSet preselMuon_, preselElec_;
 
   /// needed to guarantee the selection order as defined by the order of
   /// ParameterSets in the _selection_ vector as defined in the config
