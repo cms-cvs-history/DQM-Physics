@@ -40,3 +40,6 @@ process.p = cms.Path(#process.content *
                      process.topSingleLeptonDQM +
                      process.dqmSaver
                      )
+
+## Options and Output Report
+process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
