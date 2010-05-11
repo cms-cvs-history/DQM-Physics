@@ -26,9 +26,22 @@ topDiLeptonOfflineDQM = cms.EDAnalyzer("TopDiLeptonOfflineDQM",
       verbosity = cms.string("DEBUG")
     ),
     ## [optional] : when omitted all monitoring plots for the electron
-    ## will be filled w/o preselection on the electronId variable
+    ## will be filled w/o preselection
     elecExtras = cms.PSet(
+      select = cms.string("pt>10 && abs(eta)<2.4 && abs(d0)<1 && abs(dz)<20"),
       electronId = cms.InputTag("eidLoose")
+    ),
+    ## [optional] : when omitted all monitoring plots for the muon
+    ## will be filled w/o preselection
+    muonExtras = cms.PSet(
+      select = cms.string("pt>5 && abs(eta)<2.4 && abs(d0)<1 && abs(dz)<20"),
+      electronId = cms.InputTag("eidLoose")
+    ),
+    ## [optional] : when omitted no mass window will be applied
+    ## for the same flavor lepton monitoring plots 
+    massExtras = cms.PSet(
+      lowerEdge = cms.double(3.0),
+      upperEdge = cms.double(3.2)
     ),
     ## [optional] : when omitted all monitoring plots for jets will
     ## be filled from uncorrected jets
@@ -61,9 +74,9 @@ topDiLeptonOfflineDQM = cms.EDAnalyzer("TopDiLeptonOfflineDQM",
       select = cms.vstring(['HLT_Mu9','HLT_Ele15_SW_L1R','HLT_DoubleMu3'])
     ),
     ## [optional] : when omitted no preselection is applied
-    beamspot = cms.PSet(
-      src    = cms.InputTag("offlineBeamSpot"),
-      select = cms.string('abs(z0)<0.20')
+    vertex = cms.PSet(
+      src    = cms.InputTag("offlinePrimaryVertices"),
+      select = cms.string('abs(x)<1. && abs(y)<1. && abs(z)<20. && tracksSize>3 && !isFake')
     )
   ),
   
@@ -81,13 +94,7 @@ topDiLeptonOfflineDQM = cms.EDAnalyzer("TopDiLeptonOfflineDQM",
       ## [mandatory] : 'jets' defines the objects to
       ## select on, 'step0' labels the histograms;
       ## instead of 'step0' you can choose any label
-      label  = cms.string("jets/calo:step0"),
-      ## [mandatory] : defines the input collection      
-      src    = cms.InputTag("ak5CaloJets"),
-      ## [mandatory] : can be empty or of any kind
-      ## of allowed selection string
-      select = cms.string("pt>20 & abs(eta)<2.1 & 0.05<emEnergyFraction & emEnergyFraction<0.95"),
-      min    = cms.int32(3),
+      label  = cms.string("empty:step0")
     ),
   ),
 )

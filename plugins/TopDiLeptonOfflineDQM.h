@@ -45,7 +45,7 @@ namespace TopDiLeptonOffline {
     /// for jet, electrons and muon buffering
     typedef reco::LeafCandidate::LorentzVector LorentzVector;
     /// different decay channels
-    enum DecayChannel{ NONE, DIMUON, DIELEC, ELECMUON };
+    enum DecayChannel{ NONE, DIMUON, DIELEC, ELECMU };
     
   public:
     /// default contructor
@@ -66,26 +66,16 @@ namespace TopDiLeptonOffline {
     /// expected to be of type 'monitorPath:selectionPath' 
     std::string selectionPath(const std::string& label) const { return label.substr(label.find(':')+1); };  
     /// determine dileptonic decay channel 
-    DecayChannel decayChannel(const std::vector<LorentzVector>& muons, const std::vector<LorentzVector>& elecs) const;
+    DecayChannel decayChannel(const std::vector<const reco::Muon*>& muons, const std::vector<const reco::GsfElectron*>& elecs) const;
 
+    /// fill trigger monitoring histograms
+    void fill(const edm::TriggerResults& triggerTable) const;
     /// check if histogram was booked
     bool booked(const std::string histName) const { return hists_.find(histName.c_str())!=hists_.end(); };
     /// fill histogram if it had been booked before
     void fill(const std::string histName, double value) const { if(booked(histName.c_str())) hists_.find(histName.c_str())->second->Fill(value); };
-
-    /// fill trigger monitoring histograms
-    void fill(const edm::TriggerResults& triggerTable, const LorentzVector& leptonA, const LorentzVector& leptonB) const;
-    /// fill common set of histograms for lepton pairs with same flavor
-    void fill(const std::vector<LorentzVector>& leptons, const LorentzVector& leadingJet, const LorentzVector& met) const;
-    /// fill common set of histograms for lepton pairs with different flavor
-    void fill(const LorentzVector& leadingLepton, const LorentzVector& subleadingLepton, const LorentzVector& leadingJet, const LorentzVector& met) const;
-
-    /// fill muon histograms
-    void fill(const edm::View<reco::Muon>& muons, std::vector<LorentzVector>& leadingMuonBuffer, std::vector<bool>& leptonIsolationBuffer) const;
-    /// fill jet histograms
-    void fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const JetCorrector* corrector, std::vector<LorentzVector>& leadingJetBuffer) const;
-    /// fill electron histograms
-    void fill(const edm::View<reco::GsfElectron>& elecs, const edm::Event& event, std::vector<LorentzVector>& leadingElectronBuffer, std::vector<bool>& leptonIsolationBuffer) const;
+    /// fill histogram if it had been booked before (2-dim version)
+    void fill(const std::string histName, double xValue, double yValue) const { if(booked(histName.c_str())) hists_.find(histName.c_str())->second->Fill(xValue, yValue); };
 
   private:
     /// verbosity level for booking
@@ -98,6 +88,10 @@ namespace TopDiLeptonOffline {
     std::vector<edm::InputTag> mets_;
     /// electronId
     edm::InputTag electronId_;
+    /// extra selection on muons
+    StringCutObjectSelector<reco::Muon>* muonSelect_;
+    /// extra selection on electrons
+    StringCutObjectSelector<reco::GsfElectron>* elecSelect_;
     /// jetCorrector
     std::string jetCorrector_;
     /// trigger table
@@ -105,6 +99,8 @@ namespace TopDiLeptonOffline {
     /// trigger paths for monitoring, expected 
     /// to be of form signalPath:MonitorPath
     std::vector<std::string> triggerPaths_;
+    /// mass window upper and lower edge
+    double lowerEdge_, upperEdge_;
 
     /// storage manager
     DQMStore* store_;
@@ -113,13 +109,13 @@ namespace TopDiLeptonOffline {
   };
 
   inline MonitorEnsemble::DecayChannel
-  MonitorEnsemble::decayChannel(const std::vector<LorentzVector>& muons, const std::vector<LorentzVector>& elecs) const 
+  MonitorEnsemble::decayChannel(const std::vector<const reco::Muon*>& muons, const std::vector<const reco::GsfElectron*>& elecs) const 
   {
     DecayChannel type=NONE;
     if( !elecs.empty() && !muons.empty() ){
-      if( muons.size()>1 && muons[1].pt()>elecs[0].pt() ){ type=DIMUON; }
-      else if( elecs.size()>1 && elecs[1].pt()>muons[0].pt() ){ type=DIELEC; }
-      else{ type=ELECMUON; }
+      if( muons.size()>1 && muons[1]->pt()>elecs[0]->pt() ){ type=DIMUON; }
+      else if( elecs.size()>1 && elecs[1]->pt()>muons[0]->pt() ){ type=DIELEC; }
+      else{ type=ELECMU; }
     }
     return type;
   } 
@@ -135,7 +131,7 @@ namespace TopDiLeptonOffline {
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "DataFormats/BeamSpot/interface/BeamSpot.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "FWCore/Framework/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
   
@@ -191,11 +187,9 @@ class TopDiLeptonOfflineDQM : public edm::EDAnalyzer  {
   /// trigger paths
   std::vector<std::string> triggerPaths_;
   /// beamspot 
-  edm::InputTag beamspot_;
+  edm::InputTag vertex_;
   /// string cut selector
-  StringCutObjectSelector<reco::BeamSpot>* beamspotSelect_;
-  /// parameters for muon/electron preselection
-  edm::ParameterSet preselMuon_, preselElec_;
+  StringCutObjectSelector<reco::Vertex>* vertexSelect_;
 
   /// needed to guarantee the selection order as defined by the order of
   /// ParameterSets in the _selection_ vector as defined in the config
