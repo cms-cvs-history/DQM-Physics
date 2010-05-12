@@ -43,12 +43,12 @@ process.source = cms.Source(
 process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer09_cff")
 process.prefer("L2L3JetCorrectorAK5Calo")
 
-#process.content = cms.EDAnalyzer("EventContentAnalyzer")
+process.content = cms.EDAnalyzer("EventContentAnalyzer")
 
 process.p = cms.Path(#process.content *
                      process.topDiLeptonOfflineDQM  +
-                     process.topElectronElectronDQM +                    
-                     process.topElectronMuonDQM +
-                     process.topMuonMuonDQM +
+                     #process.topElectronElectronDQM +                    
+                     #process.topElectronMuonDQM +
+                     #process.topMuonMuonDQM +
                      process.dqmSaver
                      )

@@ -21,12 +21,12 @@ namespace TopDiLeptonOffline {
       edm::ParameterSet elecExtras=cfg.getParameter<edm::ParameterSet>("elecExtras");
       // select is optional; in case it's not found no
       // selection will be applied
-      if( cfg.existsAs<std::string>("select") ){
+      if( elecExtras.existsAs<std::string>("select") ){
 	elecSelect_= new StringCutObjectSelector<reco::GsfElectron>(elecExtras.getParameter<std::string>("select"));
       }
       // electronId is optional; in case it's not found the 
       // InputTag will remain empty
-      if( cfg.existsAs<edm::InputTag>("electronId") ){
+      if( elecExtras.existsAs<edm::InputTag>("electronId") ){
 	electronId_= elecExtras.getParameter<edm::InputTag>("electronId");
       }
     }
@@ -35,7 +35,7 @@ namespace TopDiLeptonOffline {
       edm::ParameterSet muonExtras=cfg.getParameter<edm::ParameterSet>("muonExtras");
       // select is optional; in case it's not found no
       // selection will be applied
-      if( cfg.existsAs<std::string>("select") ){
+      if( muonExtras.existsAs<std::string>("select") ){
 	muonSelect_= new StringCutObjectSelector<reco::Muon>(muonExtras.getParameter<std::string>("select"));
       }
     }
@@ -105,7 +105,7 @@ namespace TopDiLeptonOffline {
     // decay channel [1]: muon/muon, [2]:elec/elec, [3]:elec/muon 
     hists_["decayChannel_"] = store_->book1D("decayChannel", "Decay Channel Estimate" ,   3,    0,    3);
     // fired selection trigger
-    hists_["triggerSel_"  ] = store_->book1D("TriggerSel"  , "Sel(Lepton Triggers)"   ,   n,   0.,    n);
+    hists_["triggerEff_"  ] = store_->book1D("TriggerSel"  , "Sel(Lepton Triggers)"   ,   n,   0.,    n);
     // fired monitored selection trigger efficiency
     hists_["triggerMon_"  ] = store_->book1D("TriggerMon"  , "Eff(Lepton Triggers)"   ,   n,   0.,    n);
     // pt of the leading lepton
@@ -125,25 +125,25 @@ namespace TopDiLeptonOffline {
     // set bin labels for trigger monitoring
     for(unsigned int iTrigger=0; iTrigger<triggerPaths_.size(); ++iTrigger){
       hists_["triggerMon_"]->setBinLabel( iTrigger+1, "["+monitorPath(triggerPaths_[iTrigger])+"]", 1);
-      hists_["triggerSel_"]->setBinLabel( iTrigger+1, "["+selectionPath(triggerPaths_[iTrigger])+"]|["+selectionPath(triggerPaths_[iTrigger])+"]", 1);
+      hists_["triggerEff_"]->setBinLabel( iTrigger+1, "["+selectionPath(triggerPaths_[iTrigger])+"]|["+monitorPath(triggerPaths_[iTrigger])+"]", 1);
     }
     if( verbosity_==STANDARD) return;
 
     // --- [VERBOSE] --- //
     // electron multiplicity after std isolation
-    hists_["elecMultIso_" ] = store_->book1D("ElecMultIso" , "N_{iso}(Electron)"      ,  10,   0.,  10.);
+    hists_["elecMultIso_" ] = store_->book1D("ElecMultIso" , "N_{iso}(Elec)"          ,  10,   0.,  10.);
     // muon multiplicity after std isolation
     hists_["muonMultIso_" ] = store_->book1D("MuonMultIso" , "N_{iso}(Muon)"          ,  10,   0.,  10.);
     // mean eta of the candidate leptons
-    hists_["meanEtaL1L2_" ] = store_->book1D("MeanEtaL1L2" , "<eta>(L1, L2)"          ,  30,  -5.,   5.); 
+    hists_["sumEtaL1L2_"  ] = store_->book1D("SumEtaL1L2"  , "<eta>(L1, L2)"          ,  30,  -5.,   5.); 
     // deltaEta between the 2 candidate leptons
-    hists_["deltaEtaL1L2_"] = store_->book1D("DeltaEtaL1L2", "deltaEta(Lept1,Lept2)"  ,  30,   0.,   3.);
+    hists_["delEtaL1L2_"  ] = store_->book1D("DelEtaL1L2"  , "#Delta Eta(L1,L2)"      ,  30,   0.,   3.);
     // deltaPhi between the 2 candidate leptons
-    hists_["deltaPhiL1L2_"] = store_->book1D("DeltaPhiL1L2", "deltaPhi(Lept1,Lept2)"  ,  32,   0.,  3.2);
+    hists_["delPhiL1L2_"  ] = store_->book1D("DelPhiL1L2"  , "#Delta Phi(L1,L2)"      ,  32,   0.,  3.2);
     // pt of the candidate electron (depending on the decay channel)
-    hists_["elecPt_"      ] = store_->book1D("ElecPt"      , "pt(Electron)"           ,  50,   0., 150.);
+    hists_["elecPt_"      ] = store_->book1D("ElecPt"      , "pt(Elec)"               ,  50,   0., 150.);
     // relative isolation of the candidate electron (depending on the decay channel)
-    hists_["elecRelIso_"  ] = store_->book1D("ElecRelIso"  , "Iso_Trk(Elec)"          ,  50,   0.,   1.);
+    hists_["elecRelIso_"  ] = store_->book1D("ElecRelIso"  , "Iso_Rel(Elec)"          ,  50,   0.,   1.);
     // pt of the canddiate muon (depending on the decay channel)
     hists_["muonPt_"      ] = store_->book1D("MuonPt"      , "pt(Muon)"               ,  50,   0., 150.);
     // relative isolation of the candidate muon (depending on the decay channel)
@@ -159,7 +159,7 @@ namespace TopDiLeptonOffline {
     // dz for muons (to suppress cosmis)
     hists_["muonDelZ_"    ] = store_->book1D("MuonDelZ"    , "d_z(Muon)"              ,  50, -25.,  25.);
     // dxy for muons (to suppress cosmics)
-    hists_["muonDelXY_"   ] = store_->book2D("MuonDelXY"   , "d_xy(Muon)"             ,  50,  -1.,  1.,  50,  -1.,  1. );
+    hists_["muonDelXY_"   ] = store_->book2D("MuonDelXY"   , "d_xy(Muon)"             ,  50,  -0.05, 0.05,  50,  -0.05,  0.05 );
     if( verbosity_==VERBOSE) return;
 
     // --- [DEBUG] --- //
@@ -172,7 +172,7 @@ namespace TopDiLeptonOffline {
     // track isolation of the candidate electron (depending on the decay channel)
     hists_["elecTrkIso_"  ] = store_->book1D("ElecTrkIso"  , "Iso_Trk(Elec)"          ,  50,   0.,   1.);
     // eta of the leading jet
-    hists_["jet1Eta_"     ] = store_->book1D("Jet1Eta"     , "eta(Jet)"               ,  30,  -5.,   5.); 
+    hists_["jet1Eta_"     ] = store_->book1D("Jet1Eta"     , "eta(Jet1)"              ,  30,  -5.,   5.); 
     // eta of the 2. leading jet
     hists_["jet2Eta_"     ] = store_->book1D("Jet2Eta"     , "eta(Jet2)"              ,  30,  -5.,   5.);
     // pt of the 1. leading jet (not corrected)
@@ -180,21 +180,21 @@ namespace TopDiLeptonOffline {
     // pt of the 2. leading jet (not corrected)     
     hists_["jet2PtRaw_"   ] = store_->book1D("Jet2PtRaw"   , "pt(Jet2,raw)"           ,  50,   0., 150.);
     // deltaEta between the 2 leading jets
-    hists_["dEtaJet1Jet2_"] = store_->book1D("DEtaJet1Jet2", "deltaEta(Jet1,Jet2)"    ,  30,   0.,   3.);
+    hists_["dEtaJet1Jet2_"] = store_->book1D("DEtaJet1Jet2", "#Delta Eta(Jet1,Jet2)"  ,  30,   0.,   3.);
     // deltaEta between the lepton and the leading jet
-    hists_["dEtaJet1Lep1_"] = store_->book1D("DEtaJet1Lep1", "deltaEta(Jet1,Lept1)"   ,  30,   0.,   3.);
+    hists_["dEtaJet1Lep1_"] = store_->book1D("DEtaJet1Lep1", "#Delta Eta(Jet1,Lept1)" ,  30,   0.,   3.);
     // deltaEta between the lepton and MET
-    hists_["dEtaLep1MET_" ] = store_->book1D("DEtaLep1MET" , "deltaEta(Lept1,MET)"    ,  30,   0.,   3.);
+    hists_["dEtaLep1MET_" ] = store_->book1D("DEtaLep1MET" , "#Delta Eta(Lept1,MET)"  ,  30,   0.,   3.);
     // deltaEta between leading jet and MET
-    hists_["dEtaJet1MET_" ] = store_->book1D("DEtaJet1MET" , "deltaEta(Jet1,MET)"     ,  30,   0.,   3.);
+    hists_["dEtaJet1MET_" ] = store_->book1D("DEtaJet1MET" , "#Delta Eta(Jet1,MET)"   ,  30,   0.,   3.);
     // deltaPhi of 2 leading jets
-    hists_["dPhiJet1Jet2_"] = store_->book1D("DPhiJet1Jet2", "deltaPhi(Jet1,Jet2)"    ,  32,   0.,  3.2);
+    hists_["dPhiJet1Jet2_"] = store_->book1D("DPhiJet1Jet2", "#Delta Phi(Jet1,Jet2)"  ,  32,   0.,  3.2);
     // deltaPhi of 1. lepton and 1. jet
-    hists_["dPhiJet1Lep1_"] = store_->book1D("DPhiJet1Lep1", "deltaPhi(Jet1,Lept1)"   ,  32,   0.,  3.2);
+    hists_["dPhiJet1Lep1_"] = store_->book1D("DPhiJet1Lep1", "#Delta Phi(Jet1,Lept1)" ,  32,   0.,  3.2);
     // deltaPhi of 1. lepton and MET
-    hists_["dPhiLep1MET_" ] = store_->book1D("DPhiLep1MET" , "deltaPhi(Lept1,MET)"    ,  32,   0.,  3.2);
+    hists_["dPhiLep1MET_" ] = store_->book1D("DPhiLep1MET" , "#Delta Phi(Lept1,MET)"  ,  32,   0.,  3.2);
     // deltaPhi of 1. jet and MET
-    hists_["dPhiJet1MET_" ] = store_->book1D("DPhiJet1MET" , "deltaPhi(Jett1,MET)"    ,  32,   0.,  3.2);
+    hists_["dPhiJet1MET_" ] = store_->book1D("DPhiJet1MET" , "#Delta Phi(Jet1,MET)"   ,  32,   0.,  3.2);
     return;
   }
 
@@ -204,9 +204,10 @@ namespace TopDiLeptonOffline {
     for(unsigned int iTrigger=0; iTrigger<triggerPaths_.size(); ++iTrigger){
       if( accept(triggerTable, monitorPath(triggerPaths_[iTrigger])) ){
 	fill("triggerMon_", iTrigger+0.5 );
-	if(accept(triggerTable, selectionPath(triggerPaths_[iTrigger]))){
-	  fill("triggerSel_", iTrigger+0.5 );
-	}
+	// take care to fill triggerMon_ before evts is being called
+	int evts = hists_.find("triggerMon_")->second->getBinContent(iTrigger+1);
+	double value = hists_.find("triggerEff_")->second->getBinContent(iTrigger+1);
+	fill("triggerEff_", iTrigger+0.5, 1./evts*(accept(triggerTable, selectionPath(triggerPaths_[iTrigger]))-value));
       }
     }
   }
@@ -224,7 +225,7 @@ namespace TopDiLeptonOffline {
 
     // buffer isolated muons
     std::vector<const reco::Muon*> isoMuons;
-    edm::Handle<edm::View<reco::Muon> > muons;
+    edm::Handle<edm::View<reco::Muon> > muons; event.getByLabel(muons_, muons);
     for(edm::View<reco::Muon>::const_iterator muon=muons->begin(); muon!=muons->end(); ++muon){
       // restrict to globalMuons
       if( muon->isGlobalMuon() ){ 
@@ -254,10 +255,11 @@ namespace TopDiLeptonOffline {
     std::vector<const reco::GsfElectron*> isoElecs;
     edm::Handle<edm::ValueMap<float> > electronId; 
     if(!electronId_.label().empty()) event.getByLabel(electronId_, electronId);
-    edm::Handle<edm::View<reco::GsfElectron> > elecs;
+    edm::Handle<edm::View<reco::GsfElectron> > elecs; event.getByLabel(elecs_, elecs);
     for(edm::View<reco::GsfElectron>::const_iterator elec=elecs->begin(); elec!=elecs->end(); ++elec){
       // restrict to electrons with good electronId
-      if( electronId_.label().empty() ? true : (*electronId)[elecs->refAt(elec-elecs->begin())]>0.99 ){
+      int index = elec-elecs->begin();
+      if( electronId_.label().empty() ? true : (*electronId)[elecs->refAt(index)]>0.99 ){
 	// apply preselection
 	if((*elecSelect_)(*elec)){
 	  double isolationTrk = elec->pt()/(elec->pt()+elec->dr03TkSumPt());
@@ -280,34 +282,43 @@ namespace TopDiLeptonOffline {
 
     unsigned int mult30=0;
     // buffer leadingJets
-    std::vector<reco::Jet*> leadingJets;
+    std::vector<reco::Jet> leadingJets;
     const JetCorrector* corrector=0;
     if(!jetCorrector_.empty()){ corrector = JetCorrector::getJetCorrector(jetCorrector_, setup); }
-    edm::Handle<edm::View<reco::Jet> > jets;
-    event.getByLabel(jets_, jets);
+    edm::Handle<edm::View<reco::Jet> > jets; event.getByLabel(jets_, jets);
     for(edm::View<reco::Jet>::const_iterator jet=jets->begin(); jet!=jets->end(); ++jet){
-      unsigned int idx=jet-jets->begin();
+      unsigned int index=jet-jets->begin();
       // determine jet correction scale
       reco::Jet correctedJet=*jet; correctedJet.scaleEnergy(corrector ?  corrector->correction(*jet) : 1.);
       if(correctedJet.pt()>30) {++mult30;} // determine jet multiplicity
-      if(idx==0) {
-	leadingJets.push_back(&correctedJet);
+      if(index==0) {
+	leadingJets.push_back(correctedJet);
 	fill("jet1Pt_"    , correctedJet.pt());
 	fill("jet1PtRaw_" , jet->pt() );
 	fill("jet1Eta_"   , jet->eta());
       }
-      if(idx==1) {
-	leadingJets.push_back(&correctedJet);
+      if(index==1) {
+	leadingJets.push_back(correctedJet);
 	fill("jet2Pt_"    , correctedJet.pt());
 	fill("jet2PtRaw_" , jet->pt() );
 	fill("jet2Eta_"   , jet->eta());
       }
     }
     if(leadingJets.size()>1){
-      fill("dEtaJet1Jet2_" , leadingJets[0]->eta()-leadingJets[1]->eta());
-      fill("dPhiJet1Jet2_" , reco::deltaPhi(leadingJets[0]->phi(), leadingJets[1]->phi()));
-      fill("dPhiJet1Lep1_" , reco::deltaPhi(isoMuons[0]->pt()>isoElecs[0]->pt() ? isoMuons[0]->phi() : isoElecs[0]->phi(), leadingJets[0]->phi()));
-      fill("dEtaJet1Lep1_" , isoMuons[0]->pt()>isoElecs[0]->pt() ? isoMuons[0]->eta()-leadingJets[0]->eta() : isoElecs[0]->eta()-leadingJets[0]->eta());
+      fill("dEtaJet1Jet2_" , leadingJets[0].eta()-leadingJets[1].eta());
+      fill("dPhiJet1Jet2_" , reco::deltaPhi(leadingJets[0].phi(), leadingJets[1].phi()));
+      if( !isoMuons.empty() ){
+	if( isoElecs.empty() || isoMuons[0]->pt()>isoElecs[0]->pt() ){
+	  fill("dEtaJet1Lep1_" , isoMuons[0]->eta()-leadingJets[0].eta());
+	  fill("dPhiJet1Lep1_" , reco::deltaPhi(isoMuons[0]->phi() , leadingJets[0].phi()));
+	} 
+      }
+      if( !isoElecs.empty() ){
+	if( isoMuons.empty() || isoElecs[0]->pt()>isoMuons[0]->pt() ){
+	  fill("dEtaJet1Lep1_" , isoElecs[0]->eta()-leadingJets[0].eta());
+	  fill("dPhiJet1Lep1_" , reco::deltaPhi(isoElecs[0]->phi() , leadingJets[0].phi()));
+	}
+      }
     }
     fill("jetMult_", mult30);
     
@@ -320,16 +331,25 @@ namespace TopDiLeptonOffline {
     */
 
     for(std::vector<edm::InputTag>::const_iterator met_=mets_.begin(); met_!=mets_.end(); ++met_){
-      edm::Handle<edm::View<reco::MET> > met;
-      event.getByLabel(*met_, met);
+      edm::Handle<edm::View<reco::MET> > met; event.getByLabel(*met_, met);
       if(met->begin()!=met->end()){
 	unsigned int idx=met_-mets_.begin();
 	if(idx==0){ 
 	  fill("metCalo_"     , met->begin()->et());
-	  fill("dEtaJet1MET_" , leadingJets[0]->eta()-met->begin()->eta());
-	  fill("dPhiJet1MET_" , reco::deltaPhi(leadingJets[0]->phi(), met->begin()->phi()));
-	  fill("dPhiLep1MET_" , reco::deltaPhi(isoMuons[0]->pt()>isoElecs[0]->pt() ? isoMuons[0]->phi() : isoElecs[0]->phi(), met->begin()->phi()));
-	  fill("dEtaLep1MET_" , isoMuons[0]->pt()>isoElecs[0]->pt() ? isoMuons[0]->eta()-met->begin()->eta() : isoElecs[0]->eta()-met->begin()->eta());
+	  fill("dEtaJet1MET_" , leadingJets[0].eta()-met->begin()->eta());
+	  fill("dPhiJet1MET_" , reco::deltaPhi(leadingJets[0].phi(), met->begin()->phi()));
+	  if( !isoMuons.empty() ){
+	    if( isoElecs.empty() || isoMuons[0]->pt()>isoElecs[0]->pt() ){
+	      fill("dEtaLep1MET_" , isoMuons[0]->eta()-met->begin()->eta());
+	      fill("dPhiLep1MET_" , reco::deltaPhi(isoMuons[0]->phi(), met->begin()->phi()));
+	    } 
+	  }
+	  if( !isoElecs.empty() ){
+	    if( isoMuons.empty() || isoElecs[0]->pt()>isoMuons[0]->pt() ){
+	      fill("dEtaLep1MET_" , isoElecs[0]->eta()-met->begin()->eta());
+	      fill("dPhiLep1MET_" , reco::deltaPhi(isoElecs[0]->phi(), met->begin()->phi()));
+	    }
+	  }
 	}
 	if(idx==1){ fill("metTC_"   , met->begin()->et());}
 	if(idx==2){ fill("metPflow_", met->begin()->et());}
@@ -339,16 +359,17 @@ namespace TopDiLeptonOffline {
     // ELECMU channel
     if( decayChannel(isoMuons, isoElecs) == ELECMU ){
       fill("decayChannel_", 0.5);
-      int charge = isoElecs[0]->charge()*isoElecs[1]->charge();
-      double mass = (isoElecs[0]->p4()+isoElecs[1]->p4()).mass();
-      fill(charge<0 ? "invMass_"    : "invMassWC_"    , mass       );
-      fill(charge<0 ? "invMassLog_" : "invMassWCLog_" , log10(mass));
+      double mass = (isoElecs[0]->p4()+isoMuons[0]->p4()).mass();
       if( (lowerEdge_==-1. && upperEdge_==-1.) || (lowerEdge_<mass && mass>upperEdge_) ){
-	fill("elecPt_", isoElecs[0]->pt()); fill("elecPt_", isoElecs[1]->pt()); 
+	fill("delEtaL1L2_", isoElecs[0]->eta()-isoMuons[0]->eta()); 
+	fill("sumEtaL1L2_", (isoElecs[0]->eta()+isoMuons[0]->eta())/2); 
+	fill("delPhiL1L2_", reco::deltaPhi(isoElecs[0]->phi(), isoMuons[0]->eta())); 
+	fill("elecPt_", isoElecs[0]->pt()); fill("elecPt_", isoMuons[0]->pt()); 
 	fill("lep1Pt_", isoElecs[0]->pt()>isoMuons[0]->pt() ? isoElecs[0]->pt() : isoMuons[0]->pt());
 	fill("lep2Pt_", isoElecs[0]->pt()>isoMuons[0]->pt() ? isoMuons[0]->pt() : isoElecs[0]->pt());
       }
     }
+
     // DIMUON channel
     if( decayChannel(isoMuons, isoElecs) == DIMUON ){
       fill("decayChannel_", 1.5);
@@ -357,13 +378,14 @@ namespace TopDiLeptonOffline {
       fill(charge<0 ? "invMass_"    : "invMassWC_"    , mass       );
       fill(charge<0 ? "invMassLog_" : "invMassWCLog_" , log10(mass));
       if((lowerEdge_==-1. && upperEdge_==-1.) || (lowerEdge_<mass && mass>upperEdge_) ){
-	fill("meanEtaL1L2" , (isoMuons[0]->eta()+isoMuons[1]->eta())/2);
+	fill("delEtaL1L2", isoMuons[0]->eta()-isoMuons[1]->eta() );
+	fill("sumEtaL1L2", (isoMuons[0]->eta()+isoMuons[1]->eta())/2);
+	fill("delPhiL1L2", reco::deltaPhi(isoMuons[0]->phi(),isoMuons[1]->phi()) );
 	fill("muonPt_", isoMuons[0]->pt()); fill("muonPt_", isoMuons[1]->pt()); 
 	fill("lep1Pt_", isoMuons[0]->pt()); fill("lep2Pt_", isoMuons[1]->pt()); 
-	fill("deltaEtaL1L2", reco::deltaPhi(isoMuons[0]->eta(),isoMuons[1]->eta()) );
-	fill("deltaPhiL1L2", reco::deltaPhi(isoMuons[0]->phi(),isoMuons[1]->phi()) );
       }
     }
+
     // DIELEC channel
     if( decayChannel(isoMuons, isoElecs) == DIELEC ){
       int charge = isoElecs[0]->charge()*isoElecs[1]->charge();
@@ -372,13 +394,14 @@ namespace TopDiLeptonOffline {
       fill(charge<0 ? "invMass_"    : "invMassWC_"    , mass       );
       fill(charge<0 ? "invMassLog_" : "invMassWCLog_" , log10(mass));
       if((lowerEdge_==-1. && upperEdge_==-1.) || (lowerEdge_<mass && mass>upperEdge_) ){
-	fill("meanEtaL1L2" , (isoElecs[0]->eta()+isoElecs[1]->eta())/2);
+	fill("delEtaL1L2", isoElecs[0]->eta()-isoElecs[1]->eta() );
+	fill("sumEtaL1L2", (isoElecs[0]->eta()+isoElecs[1]->eta())/2);
+	fill("delPhiL1L2", reco::deltaPhi(isoElecs[0]->phi(),isoElecs[1]->phi()) );
 	fill("elecPt_", isoElecs[0]->pt()); fill("elecPt_", isoElecs[1]->pt()); 
 	fill("lep1Pt_", isoElecs[0]->pt()); fill("lep2Pt_", isoElecs[1]->pt()); 
-	fill("deltaEtaL1L2", reco::deltaPhi(isoElecs[0]->eta(),isoElecs[1]->eta()) );
-	fill("deltaPhiL1L2", reco::deltaPhi(isoElecs[0]->phi(),isoElecs[1]->phi()) );
       }
     }
+
     // fill plots for trigger monitoring
     if( decayChannel(isoMuons, isoElecs) != NONE   ){
       if(!triggerTable_.label().empty()){
@@ -423,11 +446,10 @@ TopDiLeptonOfflineDQM::analyze(const edm::Event& event, const edm::EventSetup& s
     if(!accept(*triggerTable, triggerPaths_)) return;
   }
   if(!vertex_.label().empty()){
-    edm::Handle<reco::Vertex> vertex;
+    edm::Handle<std::vector<reco::Vertex> > vertex;
     event.getByLabel(vertex_, vertex);
-    if(!(*vertexSelect_)(*vertex)) return;
+    if(vertex->empty() || !(*vertexSelect_)(vertex->front())) return;
   }
-
   // apply selection steps
   for(std::vector<std::string>::const_iterator selIt=selectionOrder_.begin(); selIt!=selectionOrder_.end(); ++selIt){
     std::string key = selectionStep(*selIt), type = objectType(*selIt);

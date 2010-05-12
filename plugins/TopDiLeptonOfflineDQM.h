@@ -60,11 +60,11 @@ namespace TopDiLeptonOffline {
 
   private:
     /// deduce monitorPath from label, the label is expected
-    /// to be of type 'monitorPath:selectionPath'
-    std::string monitorPath(const std::string& label) const { return label.substr(0, label.find(':')); };  
+    /// to be of type 'selectionPath:monitorPath'
+    std::string monitorPath(const std::string& label) const { return label.substr(label.find(':')+1); };  
     /// deduce selectionPath from label, the label is 
-    /// expected to be of type 'monitorPath:selectionPath' 
-    std::string selectionPath(const std::string& label) const { return label.substr(label.find(':')+1); };  
+    /// expected to be of type 'selectionPath:monitorPath' 
+    std::string selectionPath(const std::string& label) const { return label.substr(0, label.find(':')); };  
     /// determine dileptonic decay channel 
     DecayChannel decayChannel(const std::vector<const reco::Muon*>& muons, const std::vector<const reco::GsfElectron*>& elecs) const;
 
