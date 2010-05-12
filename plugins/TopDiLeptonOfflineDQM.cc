@@ -105,9 +105,9 @@ namespace TopDiLeptonOffline {
     // decay channel [1]: muon/muon, [2]:elec/elec, [3]:elec/muon 
     hists_["decayChannel_"] = store_->book1D("decayChannel", "Decay Channel Estimate" ,   3,    0,    3);
     // fired selection trigger
-    hists_["triggerEff_"  ] = store_->book1D("TriggerSel"  , "Sel(Lepton Triggers)"   ,   n,   0.,    n);
+    hists_["triggerEff_"  ] = store_->book1D("TriggerEff"  , "Eff(Lepton Triggers)"   ,   n,   0.,    n);
     // fired monitored selection trigger efficiency
-    hists_["triggerMon_"  ] = store_->book1D("TriggerMon"  , "Eff(Lepton Triggers)"   ,   n,   0.,    n);
+    hists_["triggerMon_"  ] = store_->book1D("TriggerMon"  , "Mon(Lepton Triggers)"   ,   n,   0.,    n);
     // pt of the leading lepton
     hists_["lep1Pt_"      ] = store_->book1D("LeptPt"      , "pt(Leading Lepton)"     ,  50,   0., 150.);
     // pt of the 2. leading lepton
@@ -369,7 +369,6 @@ namespace TopDiLeptonOffline {
 	fill("lep2Pt_", isoElecs[0]->pt()>isoMuons[0]->pt() ? isoMuons[0]->pt() : isoElecs[0]->pt());
       }
     }
-
     // DIMUON channel
     if( decayChannel(isoMuons, isoElecs) == DIMUON ){
       fill("decayChannel_", 1.5);
@@ -385,7 +384,6 @@ namespace TopDiLeptonOffline {
 	fill("lep1Pt_", isoMuons[0]->pt()); fill("lep2Pt_", isoMuons[1]->pt()); 
       }
     }
-
     // DIELEC channel
     if( decayChannel(isoMuons, isoElecs) == DIELEC ){
       int charge = isoElecs[0]->charge()*isoElecs[1]->charge();
@@ -401,7 +399,6 @@ namespace TopDiLeptonOffline {
 	fill("lep1Pt_", isoElecs[0]->pt()); fill("lep2Pt_", isoElecs[1]->pt()); 
       }
     }
-
     // fill plots for trigger monitoring
     if( decayChannel(isoMuons, isoElecs) != NONE   ){
       if(!triggerTable_.label().empty()){
