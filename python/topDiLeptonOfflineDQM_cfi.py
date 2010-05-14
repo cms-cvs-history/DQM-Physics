@@ -29,19 +29,21 @@ topDiLeptonOfflineDQM = cms.EDAnalyzer("TopDiLeptonOfflineDQM",
     ## will be filled w/o preselection
     elecExtras = cms.PSet(
       select = cms.string("pt>10 && abs(eta)<2.4 && abs(gsfTrack.d0)<1 && abs(gsfTrack.dz)<20"),
-      electronId = cms.InputTag("eidLoose")
+      isolation = cms.string("(dr03TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.1"),
+      electronId = cms.InputTag("eidRobustTight") ## used eidLoose
     ),
     ## [optional] : when omitted all monitoring plots for the muon
     ## will be filled w/o preselection
     muonExtras = cms.PSet(
       select = cms.string("pt>5 && abs(eta)<2.4 && abs(globalTrack.d0)<1 && abs(globalTrack.dz)<20"),
+      isolation = cms.string("(isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.1"),
     ),
     ## [optional] : when omitted no mass window will be applied
     ## for the same flavor lepton monitoring plots 
-    massExtras = cms.PSet(
-      lowerEdge = cms.double(3.0),
-      upperEdge = cms.double(3.2)
-    ),
+    #massExtras = cms.PSet(
+    #  lowerEdge = cms.double(3.0),
+    #  upperEdge = cms.double(3.2)
+    #),
     ## [optional] : when omitted all monitoring plots for jets will
     ## be filled from uncorrected jets
     jetExtras = cms.PSet(
@@ -50,12 +52,16 @@ topDiLeptonOfflineDQM = cms.EDAnalyzer("TopDiLeptonOfflineDQM",
     ## [optional] : when omitted all monitoring plots for triggering
     ## will be empty
     triggerExtras = cms.PSet(
-      src    = cms.InputTag("TriggerResults","","HLT"),
-      select = cms.vstring(['HLT_Mu9:HLT_Ele15_SW_L1R',
-                            'HLT_Mu15:HLT_Ele15_SW_L1R',
-                            'HLT_DoubleMu3:HLT_Ele15_SW_L1R',
-                            'HLT_Ele15_SW_L1R:HLT_Mu9',
-                            'HLT_Ele15_SW_L1R:HLT_DoubleMu3'])    
+      src = cms.InputTag("TriggerResults","","HLT"),
+      pathsELECMU = cms.vstring(['HLT_Mu9:HLT_Ele15_SW_L1R',
+                                 'HLT_Mu15:HLT_Ele15_SW_L1R',
+                                 'HLT_DoubleMu3:HLT_Ele15_SW_L1R',
+                                 'HLT_Ele15_SW_L1R:HLT_Mu9',
+                                 'HLT_Ele15_SW_L1R:HLT_DoubleMu3']),
+      pathsDIMUON = cms.vstring(['HLT_Mu15:HLT_Mu9',
+                                 'HLT_DoubleMu3:HLT_Mu9',
+                                 'HLT_Mu9:HLT_DoubleMu3',
+                                 'HLT_Mu15:HLT_DoubleMu3'])
     )    
   ),
                                   
