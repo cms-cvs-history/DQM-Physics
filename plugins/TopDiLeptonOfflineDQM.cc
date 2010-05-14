@@ -107,31 +107,31 @@ namespace TopDiLeptonOffline {
 
     // --- [STANDARD] --- //
     // invariant mass of opposite charge lepton pair (only filled for same flavor)
-    hists_["invMass_"     ] = store_->book1D("InvMass"     , "M(L1, L2)"              ,       80,   0.,     320.);
+    hists_["invMass_"     ] = store_->book1D("InvMass"     , "M(lep1, lep2)"           ,       80,   0.,     320.);
     // invariant mass of opposite charge lepton pair (only filled for same flavor)
-    hists_["invMassLog_"  ] = store_->book1D("InvMassLog"  , "log(M(L1, L2))"         ,       80,   .1,      2.5);
+    hists_["invMassLog_"  ] = store_->book1D("InvMassLog"  , "log_{10}(M(lep1, lep2))" ,       80,   .1,      2.5);
     // invariant mass of same charge lepton pair (log10 for low mass region, only filled for same flavor)
-    hists_["invMassWC_"   ] = store_->book1D("InvMassWC"   , "M_{WC}(L1, L2)"         ,       80,   0.,     320.);
+    hists_["invMassWC_"   ] = store_->book1D("InvMassWC"   , "M_{WC}(L1, L2)"          ,       80,   0.,     320.);
     // invariant mass of same charge lepton pair (log10 for low mass region, only filled for same flavor)
-    hists_["invMassWCLog_"] = store_->book1D("InvMassLogWC", "log(M_{WC}(L1, L2))"    ,       80,   .1,      2.5);
+    hists_["invMassWCLog_"] = store_->book1D("InvMassLogWC", "log_{10}(M_{WC})"        ,       80,   .1,      2.5);
     // decay channel [1]: muon/muon, [2]:elec/elec, [3]:elec/muon 
-    hists_["decayChannel_"] = store_->book1D("DecayChannel", "Decay Channel Estimate" ,        3,    0,        3);
+    hists_["decayChannel_"] = store_->book1D("DecayChannel", "Decay Channel"           ,        3,    0,        3);
     // trigger efficiency estimates for the electron muon channel
-    hists_["elecMuEff_"   ] = store_->book1D("ElecMuEff"   , "Eff(e/#mu Paths)"       ,  nElecMu,   0.,  nElecMu);
+    hists_["elecMuEff_"   ] = store_->book1D("ElecMuEff"   , "Eff(e/#mu paths)"        ,  nElecMu,   0.,  nElecMu);
     // monitored trigger occupancy for the electron muon channel
-    hists_["elecMuMon_"   ] = store_->book1D("ElecMuMon"   , "Mon(e/#mu Paths)"       ,  nElecMu,   0.,  nElecMu);
+    hists_["elecMuMon_"   ] = store_->book1D("ElecMuMon"   , "Mon(e/#mu paths)"        ,  nElecMu,   0.,  nElecMu);
     // trigger efficiency estimates for the di muon channel
-    hists_["diMuonEff_"   ] = store_->book1D("DiMuonEff"   , "Eff(#mu/#mu Paths)"     ,  nDiMuon,   0.,  nDiMuon);
+    hists_["diMuonEff_"   ] = store_->book1D("DiMuonEff"   , "Eff(#mu/#mu paths)"      ,  nDiMuon,   0.,  nDiMuon);
     // monitored trigger occupancy for the di muon channel
-    hists_["diMuonMon_"   ] = store_->book1D("DiMuonMon"   , "Mon(#mu/#mu Paths)"     ,  nDiMuon,   0.,  nDiMuon);
+    hists_["diMuonMon_"   ] = store_->book1D("DiMuonMon"   , "Mon(#mu/#mu paths)"      ,  nDiMuon,   0.,  nDiMuon);
     // pt of the leading lepton
-    hists_["lep1Pt_"      ] = store_->book1D("LeptPt"      , "pt(L1)"                 ,       50,   0.,     200.);
+    hists_["lep1Pt_"      ] = store_->book1D("LeptPt"      , "pt(lep1)"                ,       50,   0.,     200.);
     // pt of the 2. leading lepton
-    hists_["lep2Pt_"      ] = store_->book1D("Lep2Pt"      , "pt(L2)"                 ,       50,   0.,     200.);
+    hists_["lep2Pt_"      ] = store_->book1D("Lep2Pt"      , "pt(lep2)"                ,       50,   0.,     200.);
     // multiplicity of jets with pt>30 (corrected to L2+L3)
-    hists_["jetMult_"     ] = store_->book1D("JetMult"     , "N_{30}(Jet)"            ,       10,   0.,      10.); 
+    hists_["jetMult_"     ] = store_->book1D("JetMult"     , "N_{30}(jet)"             ,       10,   0.,      10.); 
     // MET (calo)
-    hists_["metCalo_"     ] = store_->book1D("METCalo"     , "MET(Calo)"              ,       50,   0.,     200.);
+    hists_["metCalo_"     ] = store_->book1D("METCalo"     , "MET_{Calo}"              ,       50,   0.,     200.);
 
     // set bin labels for trigger monitoring
     triggerBinLabels(std::string("elecMu"), elecMuPaths_);
@@ -145,73 +145,78 @@ namespace TopDiLeptonOffline {
 
     // --- [VERBOSE] --- //
     // mean eta of the candidate leptons
-    hists_["sumEtaL1L2_"  ] = store_->book1D("SumEtaL1L2"  , "<#eta>(L1, L2)"         ,       30,  -5.,       5.); 
+    hists_["sumEtaL1L2_"  ] = store_->book1D("SumEtaL1L2"  , "<#eta>(lep1, lep2)"      ,       30,  -5.,       5.); 
     // deltaEta between the 2 candidate leptons
-    hists_["dEtaL1L2_"    ] = store_->book1D("DEtaL1L2"    , "#Delta Eta(L1,L2)"      ,       30,   0.,       3.);
+    hists_["dEtaL1L2_"    ] = store_->book1D("DEtaL1L2"    , "#Delta#eta(lep1,lep2)"   ,       30,   0.,       3.);
     // deltaPhi between the 2 candidate leptons
-    hists_["dPhiL1L2_"    ] = store_->book1D("DPhiL1L2"    , "#Delta Phi(L1,L2)"      ,       32,   0.,      3.2);
+    hists_["dPhiL1L2_"    ] = store_->book1D("DPhiL1L2"    , "#Delta#phi(lep1,lep2)"   ,       32,   0.,      3.2);
     // pt of the candidate electron (depending on the decay channel)
-    hists_["elecPt_"      ] = store_->book1D("ElecPt"      , "pt(Elec)"               ,       50,   0.,     200.);
+    hists_["elecPt_"      ] = store_->book1D("ElecPt"      , "pt(e)"                   ,       50,   0.,     200.);
     // relative isolation of the candidate electron (depending on the decay channel)
-    hists_["elecRelIso_"  ] = store_->book1D("ElecRelIso"  , "Iso_{Rel}(Elec)"        ,       50,   0.,       1.);
+    hists_["elecRelIso_"  ] = store_->book1D("ElecRelIso"  , "Iso_{Rel}(e)"            ,       50,   0.,       1.);
     // pt of the canddiate muon (depending on the decay channel)
-    hists_["muonPt_"      ] = store_->book1D("MuonPt"      , "pt(Muon)"               ,       50,   0.,     200.);
+    hists_["muonPt_"      ] = store_->book1D("MuonPt"      , "pt(#mu)"                 ,       50,   0.,     200.);
     // relative isolation of the candidate muon (depending on the decay channel)
-    hists_["muonRelIso_"  ] = store_->book1D("MuonRelIso"  , "Iso_{Rel}(Muon)"        ,       50,   0.,       1.);
+    hists_["muonRelIso_"  ] = store_->book1D("MuonRelIso"  , "Iso_{Rel}(#mu)"          ,       50,   0.,       1.);
     // pt of the 1. leading jet (corrected to L2+L3)
-    hists_["jet1Pt_"      ] = store_->book1D("Jet1Pt"      , "pt(J1)"                 ,       60,   0.,     300.);   
+    hists_["jet1Pt_"      ] = store_->book1D("Jet1Pt"      , "pt_{L2L3}(jet1)"         ,       60,   0.,     300.);   
     // pt of the 2. leading jet (corrected to L2+L3)
-    hists_["jet2Pt_"      ] = store_->book1D("Jet2Pt"      , "pt(J2)"                 ,       60,   0.,     300.);
+    hists_["jet2Pt_"      ] = store_->book1D("Jet2Pt"      , "pt_{L2L3}(jet2)"         ,       60,   0.,     300.);
     // MET (PF)
-    hists_["metPflow_"    ] = store_->book1D("METPflow"    , "MET(Pflow)"             ,       50,   0.,     200.);
+    hists_["metPflow_"    ] = store_->book1D("METPflow"    , "MET_{Pflow}"             ,       50,   0.,     200.);
     // MET (TC)
-    hists_["metTC_"       ] = store_->book1D("METTC"       , "MET(TC)"                ,       50,   0.,     200.);
+    hists_["metTC_"       ] = store_->book1D("METTC"       , "MET_{TC}"                ,       50,   0.,     200.);
     // dz for muons (to suppress cosmis)
-    hists_["muonDelZ_"    ] = store_->book1D("MuonDelZ"    , "d_{z}(Muon)"            ,       50, -25.,      25.);
+    hists_["muonDelZ_"    ] = store_->book1D("MuonDelZ"    , "d_{z}(#mu)"              ,       50, -25.,      25.);
     // dxy for muons (to suppress cosmics)
-    hists_["muonDelXY_"   ] = store_->book2D("MuonDelXY"   , "d_{xy}(Muon)"                 , 50,  -0.1,  0.1, 50, -0.1,  0.1 );
+    hists_["muonDelXY_"   ] = store_->book2D("MuonDelXY"   , "d_{xy}(#mu)"                , 50,  -0.1,  0.1, 50, -0.1,  0.1 );
     // lepton multiplicity after std isolation
-    hists_["lepMultIso_"  ] = store_->book2D("LepMultIso" , "N_{iso}(Elec) vs N_{iso}(Muon)",  5,    0.,   5.,  5,   0.,    5.);
+    hists_["lepMultIso_"  ] = store_->book2D("LepMultIso"  , "N_{Iso}(e) vs N_{Iso}(#mu)" ,  5,    0.,   5.,  5,   0.,    5.);
+
+    // set axes titles for dxy for muons
+    hists_["muonDelXY_"   ]->setAxisTitle( "x [cm]", 1); hists_["muonDelXY_"   ]->setAxisTitle( "y [cm]", 2);
+    // set axes titles for lepton multiplicity after std isolation
+    hists_["lepMultIso_"  ]->setAxisTitle( "N_{Iso}(#mu)", 1); hists_["lepMultIso_"   ]->setAxisTitle( "N_{Iso}(elec)", 2);
 
     if( verbosity_==VERBOSE) return;
 
     // --- [DEBUG] --- //
     // electron multiplicity after std isolation
-    hists_["elecMultIso_" ] = store_->book1D("ElecMultIso" , "N_{iso}(Elec)"          ,       10,   0.,      10.);
+    hists_["elecMultIso_" ] = store_->book1D("ElecMultIso" , "N_{Iso}(e)"              ,       10,   0.,      10.);
     // muon multiplicity after std isolation
-    hists_["muonMultIso_" ] = store_->book1D("MuonMultIso" , "N_{iso}(Muon)"          ,       10,   0.,      10.);
+    hists_["muonMultIso_" ] = store_->book1D("MuonMultIso" , "N_{Iso}(#mu)"            ,       10,   0.,      10.);
     // calo isolation of the candidate muon (depending on the decay channel)
-    hists_["muonCalIso_"  ] = store_->book1D("MuonCalIso"  , "Iso_{Cal}(Muon)"        ,       50,   0.,       1.);
+    hists_["muonCalIso_"  ] = store_->book1D("MuonCalIso"  , "Iso_{Cal}(#mu)"          ,       50,   0.,       1.);
     // track isolation of the candidate muon (depending on the decay channel)
-    hists_["muonTrkIso_"  ] = store_->book1D("MuonTrkIso"  , "Iso_{Trk}(Muon)"        ,       50,   0.,       1.);
+    hists_["muonTrkIso_"  ] = store_->book1D("MuonTrkIso"  , "Iso_{Trk}(#mu)"          ,       50,   0.,       1.);
     // calo isolation of the candidate electron (depending on the decay channel)
-    hists_["elecCalIso_"  ] = store_->book1D("ElecCalIso"  , "Iso_{Cal}(Elec)"        ,       50,   0.,       1.);
+    hists_["elecCalIso_"  ] = store_->book1D("ElecCalIso"  , "Iso_{Cal}(e)"            ,       50,   0.,       1.);
     // track isolation of the candidate electron (depending on the decay channel)
-    hists_["elecTrkIso_"  ] = store_->book1D("ElecTrkIso"  , "Iso_{Trk}(Elec)"        ,       50,   0.,       1.);
+    hists_["elecTrkIso_"  ] = store_->book1D("ElecTrkIso"  , "Iso_{Trk}(e)"            ,       50,   0.,       1.);
     // eta of the leading jet
-    hists_["jet1Eta_"     ] = store_->book1D("Jet1Eta"     , "eta(J1)"                ,       30,  -5.,       5.); 
+    hists_["jet1Eta_"     ] = store_->book1D("Jet1Eta"     , "#eta(jet1)"              ,       30,  -5.,       5.); 
     // eta of the 2. leading jet
-    hists_["jet2Eta_"     ] = store_->book1D("Jet2Eta"     , "eta(J2)"                ,       30,  -5.,       5.);
+    hists_["jet2Eta_"     ] = store_->book1D("Jet2Eta"     , "#eta(jet2)"              ,       30,  -5.,       5.);
     // pt of the 1. leading jet (not corrected)
-    hists_["jet1PtRaw_"   ] = store_->book1D("Jet1PtRaw"   , "pt(J1,raw)"             ,       60,   0.,     300.);   
+    hists_["jet1PtRaw_"   ] = store_->book1D("Jet1PtRaw"   , "pt_{Raw}(jet1)"          ,       60,   0.,     300.);   
     // pt of the 2. leading jet (not corrected)     
-    hists_["jet2PtRaw_"   ] = store_->book1D("Jet2PtRaw"   , "pt(J2,raw)"             ,       60,   0.,     300.);
+    hists_["jet2PtRaw_"   ] = store_->book1D("Jet2PtRaw"   , "pt_{Raw}(jet2)"          ,       60,   0.,     300.);
     // deltaEta between the 2 leading jets
-    hists_["dEtaJet1Jet2_"] = store_->book1D("DEtaJet1Jet2", "#Delta #eta(J1,J2)"     ,       30,   0.,       3.);
+    hists_["dEtaJet1Jet2_"] = store_->book1D("DEtaJet1Jet2", "#Delta#eta(jet1,jet2)"   ,       30,   0.,       3.);
     // deltaEta between the lepton and the leading jet
-    hists_["dEtaJet1Lep1_"] = store_->book1D("DEtaJet1Lep1", "#Delta #eta(J1,L1)"     ,       30,   0.,       3.);
+    hists_["dEtaJet1Lep1_"] = store_->book1D("DEtaJet1Lep1", "#Delta#eta(jet1,lep1)"   ,       30,   0.,       3.);
     // deltaEta between the lepton and MET
-    hists_["dEtaLep1MET_" ] = store_->book1D("DEtaLep1MET" , "#Delta #eta(L1,MET)"    ,       30,   0.,       3.);
+    hists_["dEtaLep1MET_" ] = store_->book1D("DEtaLep1MET" , "#Delta#eta(lep1,MET)"    ,       30,   0.,       3.);
     // deltaEta between leading jet and MET
-    hists_["dEtaJet1MET_" ] = store_->book1D("DEtaJet1MET" , "#Delta #eta(J1,MET)"    ,       30,   0.,       3.);
+    hists_["dEtaJet1MET_" ] = store_->book1D("DEtaJet1MET" , "#Delta#eta(jet1,MET)"    ,       30,   0.,       3.);
     // deltaPhi of 2 leading jets
-    hists_["dPhiJet1Jet2_"] = store_->book1D("DPhiJet1Jet2", "#Delta #phi(J1,J2)"     ,       32,   0.,      3.2);
+    hists_["dPhiJet1Jet2_"] = store_->book1D("DPhiJet1Jet2", "#Delta#phi(jet1,jet2)"   ,       32,   0.,      3.2);
     // deltaPhi of 1. lepton and 1. jet
-    hists_["dPhiJet1Lep1_"] = store_->book1D("DPhiJet1Lep1", "#Delta #phi(J1,L1)"     ,       32,   0.,      3.2);
+    hists_["dPhiJet1Lep1_"] = store_->book1D("DPhiJet1Lep1", "#Delta#phi(jet1,lep1)"   ,       32,   0.,      3.2);
     // deltaPhi of 1. lepton and MET
-    hists_["dPhiLep1MET_" ] = store_->book1D("DPhiLep1MET" , "#Delta #phi(L1,MET)"    ,       32,   0.,      3.2);
+    hists_["dPhiLep1MET_" ] = store_->book1D("DPhiLep1MET" , "#Delta#phi(lep1,MET)"    ,       32,   0.,      3.2);
     // deltaPhi of 1. jet and MET
-    hists_["dPhiJet1MET_" ] = store_->book1D("DPhiJet1MET" , "#Delta #phi(J1,MET)"    ,       32,   0.,      3.2);
+    hists_["dPhiJet1MET_" ] = store_->book1D("DPhiJet1MET" , "#Delta#phi(jet1,MET)"    ,       32,   0.,      3.2);
     return;
   }
 
