@@ -29,21 +29,21 @@ topDiLeptonOfflineDQM = cms.EDAnalyzer("TopDiLeptonOfflineDQM",
     ## will be filled w/o preselection
     elecExtras = cms.PSet(
       select = cms.string("pt>10 && abs(eta)<2.4 && abs(gsfTrack.d0)<1 && abs(gsfTrack.dz)<20"),
-      isolation = cms.string("(dr03TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.1"),
+      isolation = cms.string("(dr03TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.2"),
       electronId = cms.InputTag("eidRobustTight") ## used eidLoose
     ),
     ## [optional] : when omitted all monitoring plots for the muon
     ## will be filled w/o preselection
     muonExtras = cms.PSet(
       select = cms.string("pt>5 && abs(eta)<2.4 && abs(globalTrack.d0)<1 && abs(globalTrack.dz)<20"),
-      isolation = cms.string("(isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.1"),
+      isolation = cms.string("(isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.2"),
     ),
     ## [optional] : when omitted no mass window will be applied
     ## for the same flavor lepton monitoring plots 
-    #massExtras = cms.PSet(
-    #  lowerEdge = cms.double(3.0),
-    #  upperEdge = cms.double(3.2)
-    #),
+    massExtras = cms.PSet(
+      lowerEdge = cms.double(3.0),
+      upperEdge = cms.double(3.2)
+    ),
     ## [optional] : when omitted all monitoring plots for jets will
     ## be filled from uncorrected jets
     jetExtras = cms.PSet(
