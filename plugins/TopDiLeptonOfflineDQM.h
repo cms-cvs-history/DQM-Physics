@@ -16,8 +16,6 @@
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 
-
-
 /**
    \class   MonitorEnsemble TopDQMHelpers.h "DQM/Physics/interface/TopDQMHelpers.h"
 
@@ -68,8 +66,11 @@ namespace TopDiLeptonOffline {
     /// determine dileptonic decay channel 
     DecayChannel decayChannel(const std::vector<const reco::Muon*>& muons, const std::vector<const reco::GsfElectron*>& elecs) const;
 
+    /// set configurable labels for trigger monitoring histograms
+    void triggerBinLabels(std::string channel, const std::vector<std::string> labels);
     /// fill trigger monitoring histograms
-    void fill(const edm::TriggerResults& triggerTable) const;
+    void fill(const edm::TriggerResults& triggerTable, std::string channel, const std::vector<std::string> labels) const;
+
     /// check if histogram was booked
     bool booked(const std::string histName) const { return hists_.find(histName.c_str())!=hists_.end(); };
     /// fill histogram if it had been booked before
@@ -90,15 +91,21 @@ namespace TopDiLeptonOffline {
     edm::InputTag electronId_;
     /// extra selection on muons
     StringCutObjectSelector<reco::Muon>* muonSelect_;
+    /// extra isolation criterion on muon
+    StringCutObjectSelector<reco::Muon>* muonIso_;
     /// extra selection on electrons
     StringCutObjectSelector<reco::GsfElectron>* elecSelect_;
+    /// extra isolation criterion on electron
+    StringCutObjectSelector<reco::GsfElectron>* elecIso_;
     /// jetCorrector
     std::string jetCorrector_;
     /// trigger table
     edm::InputTag triggerTable_;
     /// trigger paths for monitoring, expected 
     /// to be of form signalPath:MonitorPath
-    std::vector<std::string> triggerPaths_;
+    std::vector<std::string> elecMuPaths_;
+    /// trigger paths for di muon channel
+    std::vector<std::string> diMuonPaths_;
     /// mass window upper and lower edge
     double lowerEdge_, upperEdge_;
 
@@ -108,15 +115,34 @@ namespace TopDiLeptonOffline {
     std::map<std::string,MonitorElement*> hists_;
   };
 
+  inline void 
+  MonitorEnsemble::triggerBinLabels(std::string channel, const std::vector<std::string> labels)
+  {
+    for(unsigned int idx=0; idx<labels.size(); ++idx){
+      hists_[(channel+"Mon_").c_str()]->setBinLabel( idx+1, "["+monitorPath(labels[idx])+"]", 1);
+      hists_[(channel+"Eff_").c_str()]->setBinLabel( idx+1, "["+selectionPath(labels[idx])+"]|["+monitorPath(labels[idx])+"]", 1);
+    }
+  }
+
+  inline void 
+    MonitorEnsemble::fill(const edm::TriggerResults& triggerTable, std::string channel, const std::vector<std::string> labels) const
+  {
+    for(unsigned int idx=0; idx<labels.size(); ++idx){
+      if( accept(triggerTable, monitorPath(labels[idx])) ){
+	fill((channel+"Mon_").c_str(), idx+0.5 );
+	// take care to fill triggerMon_ before evts is being called
+	int evts = hists_.find((channel+"Mon_").c_str())->second->getBinContent(idx+1);
+	double value = hists_.find((channel+"Eff_").c_str())->second->getBinContent(idx+1);
+	fill((channel+"Eff_").c_str(), idx+0.5, 1./evts*(accept(triggerTable, selectionPath(labels[idx]))-value));
+      }
+    }
+  }
+  
   inline MonitorEnsemble::DecayChannel
   MonitorEnsemble::decayChannel(const std::vector<const reco::Muon*>& muons, const std::vector<const reco::GsfElectron*>& elecs) const 
   {
     DecayChannel type=NONE;
-    if( !elecs.empty() && !muons.empty() ){
-      if( muons.size()>1 && muons[1]->pt()>elecs[0]->pt() ){ type=DIMUON; }
-      else if( elecs.size()>1 && elecs[1]->pt()>muons[0]->pt() ){ type=DIELEC; }
-      else{ type=ELECMU; }
-    }
+    if( muons.size()>1 ){ type=DIMUON; } else if( elecs.size()>1 ){ type=DIELEC; } else if( !elecs.empty() && !muons.empty() ){ type=ELECMU; }
     return type;
   } 
   
@@ -131,6 +157,7 @@ namespace TopDiLeptonOffline {
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "FWCore/Framework/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
@@ -190,6 +217,10 @@ class TopDiLeptonOfflineDQM : public edm::EDAnalyzer  {
   edm::InputTag vertex_;
   /// string cut selector
   StringCutObjectSelector<reco::Vertex>* vertexSelect_;
+  /// beamspot 
+  edm::InputTag beamspot_;
+  /// string cut selector
+  StringCutObjectSelector<reco::BeamSpot>* beamspotSelect_;
 
   /// needed to guarantee the selection order as defined by the order of
   /// ParameterSets in the _selection_ vector as defined in the config
