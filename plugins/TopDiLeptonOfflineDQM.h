@@ -10,6 +10,7 @@
 
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/JetReco/interface/Jet.h"
+#include "DQM/Physics/interface/TopDQMHelpers.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/METReco/interface/CaloMET.h"
@@ -125,7 +126,7 @@ namespace TopDiLeptonOffline {
   }
 
   inline void 
-    MonitorEnsemble::fill(const edm::TriggerResults& triggerTable, std::string channel, const std::vector<std::string> labels) const
+  MonitorEnsemble::fill(const edm::TriggerResults& triggerTable, std::string channel, const std::vector<std::string> labels) const
   {
     for(unsigned int idx=0; idx<labels.size(); ++idx){
       if( accept(triggerTable, monitorPath(labels[idx])) ){
@@ -150,7 +151,6 @@ namespace TopDiLeptonOffline {
 
 #include <utility>
 
-#include "DQM/Physics/interface/TopDQMHelpers.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -213,7 +213,7 @@ class TopDiLeptonOfflineDQM : public edm::EDAnalyzer  {
   edm::InputTag triggerTable_;
   /// trigger paths
   std::vector<std::string> triggerPaths_;
-  /// beamspot 
+  /// primary vertex 
   edm::InputTag vertex_;
   /// string cut selector
   StringCutObjectSelector<reco::Vertex>* vertexSelect_;

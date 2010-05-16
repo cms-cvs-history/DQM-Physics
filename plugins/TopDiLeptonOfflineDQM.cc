@@ -377,9 +377,17 @@ namespace TopDiLeptonOffline {
       }
     }
 
+
+    /* 
+    ------------------------------------------------------------
+
+    Event Monitoring
+
+    ------------------------------------------------------------
+    */
+
     // check number of isolated leptons
     fill("lepMultIso_", isoMuons.size(), isoElecs.size());
-
     // ELECMU channel
     if( decayChannel(isoMuons, isoElecs) == ELECMU ){
       fill("decayChannel_", 0.5);
