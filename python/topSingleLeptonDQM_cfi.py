@@ -24,7 +24,39 @@ topSingleLeptonDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
     ## [optional] : when omitted the verbosity level is set to STANDARD
     monitoring = cms.PSet(
       verbosity = cms.string("STANDARD")
-    )
+    ),
+    ## [optional] : when omitted all monitoring plots for the electron
+    ## will be filled w/o preselection
+    elecExtras = cms.PSet(
+      select = cms.string("pt>20 & abs(eta)<2.4 & abs(gsfTrack.d0)<1 & abs(gsfTrack.dz)<20"),
+      isolation = cms.string("(dr03TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.1"),
+      electronId = cms.InputTag("eidRobustTight") ## used eidLoose
+    ),
+    ## [optional] : when omitted all monitoring plots for the muon
+    ## will be filled w/o preselection
+    muonExtras = cms.PSet(
+      select = cms.string("pt>15 & abs(eta)<2.4 & isGlobalMuon & abs(globalTrack.d0)<1 & abs(globalTrack.dz)<20"),
+      isolation = cms.string("(isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.1"),
+    ),
+    ## [optional] : when omitted all monitoring plots for jets will
+    ## be filled from uncorrected jets
+    jetExtras = cms.PSet(
+      jetCorrector = cms.string("L2L3JetCorrectorAK5Calo")
+    ),
+    ## [optional] : when omitted no mass window will be applied
+    ## for the W mass befor filling the event monitoring plots
+    massExtras = cms.PSet(
+      lowerEdge = cms.double( 70.),
+      upperEdge = cms.double(110.)
+    ),
+    ## [optional] : when omitted the monitoring plots for triggering
+    ## will be empty
+    triggerExtras = cms.PSet(
+      src   = cms.InputTag("TriggerResults","","HLT"),
+      paths = cms.vstring(['HLT_Mu9:HLT_QuadJet30',
+                           'HLT_Mu15:HLT_QuadJet30',
+                           'HLT_Ele15_SW_L1R:HLT_QuadJet30'])
+    )                                            
   ),
                                   
   ## ------------------------------------------------------
@@ -38,13 +70,13 @@ topSingleLeptonDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
     ## [optional] : when omitted no preselection is applied
     trigger = cms.PSet(
       src    = cms.InputTag("TriggerResults","","HLT"),
-      select = cms.vstring(['HLT_Mu9', 'HLT_Ele15_LW_L1R'])
+      select = cms.vstring(['HLT_Mu9', 'HLT_Ele15_LW_L1R', 'HLT_QuadJet30'])
     ),
     ## [optional] : when omitted no preselection is applied
-    beamspot = cms.PSet(
-      src    = cms.InputTag("offlineBeamSpot"),
-      select = cms.string('abs(z0)<0.20')
-    )
+    vertex = cms.PSet(
+      src    = cms.InputTag("offlinePrimaryVertices"),
+      select = cms.string('abs(x)<1. & abs(y)<1. & abs(z)<20. & tracksSize>3 & !isFake')
+    )                                        
   ),
   
   ## ------------------------------------------------------    
@@ -67,9 +99,9 @@ topSingleLeptonDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
       ## [mandatory] : can be empty or of any kind
       ## of allowed selection string
       select = cms.string("pt>20 & abs(eta)<2.1 & 0.05<emEnergyFraction & emEnergyFraction<0.95"),
-      min    = cms.int32(3),
+      min    = cms.int32(2),
     ),
-  ),
+  )
 )
 
 topMuonPlusJetsOfflineDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
@@ -97,19 +129,50 @@ topMuonPlusJetsOfflineDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
       verbosity = cms.string("DEBUG")
     ),
     ## [optional] : when omitted all monitoring plots for the electron
-    ## will be filled w/o preselection on the electronId variable
+    ## will be filled w/o preselection
     elecExtras = cms.PSet(
-      electronId = cms.InputTag("eidRobustTight")
+      select = cms.string("pt>20 & abs(eta)<2.4 & abs(gsfTrack.d0)<1 & abs(gsfTrack.dz)<20"),
+      isolation = cms.string("(dr03TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.2"),
+      electronId = cms.InputTag("eidLoose")
+    ),
+    ## [optional] : when omitted all monitoring plots for the muon
+    ## will be filled w/o preselection
+    muonExtras = cms.PSet(
+      select = cms.string("pt>20 & abs(eta)<2.1 & isGlobalMuon & abs(globalTrack.d0)<1 & abs(globalTrack.dz)<20"),
+      isolation = cms.string("(isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.1"),
     ),
     ## [optional] : when omitted all monitoring plots for jets will
     ## be filled from uncorrected jets
     jetExtras = cms.PSet(
       jetCorrector = cms.string("L2L3JetCorrectorAK5Calo"),
-      jetBTaggers  = cms.PSet( trackCountingEff = cms.PSet(label = cms.InputTag("trackCountingHighEffBJetTags" ), workingPoint = cms.double(1.25)),
-                               trackCountingPur = cms.PSet(label = cms.InputTag("trackCountingHighPurBJetTags" ), workingPoint = cms.double(3.00)),
-                               secondaryVertex  = cms.PSet(label = cms.InputTag("simpleSecondaryVertexBJetTags"), workingPoint = cms.double(2.05))
-                               )
-    )
+      jetBTaggers  = cms.PSet(
+        trackCountingEff = cms.PSet(
+          label = cms.InputTag("trackCountingHighEffBJetTags" ),
+          workingPoint = cms.double(1.25)
+        ),
+        trackCountingPur = cms.PSet(
+          label = cms.InputTag("trackCountingHighPurBJetTags" ),
+          workingPoint = cms.double(3.00)
+        ),
+        secondaryVertex  = cms.PSet(
+          label = cms.InputTag("simpleSecondaryVertexBJetTags"),
+          workingPoint = cms.double(2.05)
+        )
+      )
+    ),
+    ## [optional] : when omitted no mass window will be applied
+    ## for the W mass befor filling the event monitoring plots
+    massExtras = cms.PSet(
+      lowerEdge = cms.double( 70.),
+      upperEdge = cms.double(110.)
+    ),
+    ## [optional] : when omitted all monitoring plots for triggering
+    ## will be empty
+    triggerExtras = cms.PSet(
+      src   = cms.InputTag("TriggerResults","","HLT"),
+      paths = cms.vstring(['HLT_Mu9:HLT_QuadJet30',
+                           'HLT_Mu15:HLT_QuadJet30'])                                                   
+    )    
   ),
                                   
   ## ------------------------------------------------------
@@ -123,12 +186,12 @@ topMuonPlusJetsOfflineDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
     ## [optional] : when omitted no preselection is applied
     trigger = cms.PSet(
       src    = cms.InputTag("TriggerResults","","HLT"),
-      select = cms.vstring(['HLT_Mu9'])
+      select = cms.vstring(['HLT_Mu9', 'HLT_QuadJet30'])
     ),
     ## [optional] : when omitted no preselection is applied
-    beamspot = cms.PSet(
-      src    = cms.InputTag("offlineBeamSpot"),
-      select = cms.string('abs(z0)<0.20')
+    vertex = cms.PSet(
+      src    = cms.InputTag("offlinePrimaryVertices"),
+      select = cms.string('abs(x)<1. & abs(y)<1. & abs(z)<20. & tracksSize>3 & !isFake')
     )
   ),
   
@@ -152,18 +215,20 @@ topMuonPlusJetsOfflineDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
     cms.PSet(
       label  = cms.string("elecs:step1"),    
       src    = cms.InputTag("gsfElectrons"),
-      select = cms.string("pt>20 & abs(eta)<2.5 & (dr04TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.2"),
-      electronId  = cms.InputTag("eidRobustTight"),
+      select = cms.string("pt>20 & abs(eta)<2.4 & abs(gsfTrack.d0)<1 & abs(gsfTrack.dz)<20 &"
+                          "(dr04TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.2"),
+      electronId  = cms.InputTag("eidLoose"),
       max    = cms.int32(0),
     ),
     cms.PSet(
       label  = cms.string("muons:step2"),    
       src    = cms.InputTag("muons"),
-      select = cms.string("pt>20 & abs(eta)<2.1 & (isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.05"),
+      select = cms.string("pt>20 & abs(eta)<2.1 & isGlobalMuon & abs(globalTrack.d0)<1 & abs(globalTrack.dz)<20 &"
+                          "(isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.1"),
       min    = cms.int32(1),
       max    = cms.int32(1)
     ),    
-  ),
+  )
 )
 
 topElecPlusJetsOfflineDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
@@ -191,19 +256,49 @@ topElecPlusJetsOfflineDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
       verbosity = cms.string("DEBUG")
     ),
     ## [optional] : when omitted all monitoring plots for the electron
-    ## will be filled w/o preselection on the electronId variable
+    ## will be filled w/o preselection
     elecExtras = cms.PSet(
-      electronId = cms.InputTag("eidRobustTight")
+      select = cms.string("pt>30 && abs(eta)<2.4 & abs(gsfTrack.d0)<1 & abs(gsfTrack.dz)<20"),
+      isolation = cms.string("(dr03TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.1"),
+      electronId = cms.InputTag("eidRobustTight") ## used eidLoose
+    ),
+    ## [optional] : when omitted all monitoring plots for the muon
+    ## will be filled w/o preselection
+    muonExtras = cms.PSet(
+      select = cms.string("pt>15 && abs(eta)<2.1 & isGlobalMuon & abs(globalTrack.d0)<1 & abs(globalTrack.dz)<20"),
+      isolation = cms.string("(isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.2"),
     ),
     ## [optional] : when omitted all monitoring plots for jets will
     ## be filled from uncorrected jets
     jetExtras = cms.PSet(
       jetCorrector = cms.string("L2L3JetCorrectorAK5Calo"),
-      jetBTaggers  = cms.PSet( trackCountingEff = cms.PSet(label = cms.InputTag("trackCountingHighEffBJetTags" ), workingPoint = cms.double(1.25)),
-                               trackCountingPur = cms.PSet(label = cms.InputTag("trackCountingHighPurBJetTags" ), workingPoint = cms.double(3.00)),
-                               secondaryVertex  = cms.PSet(label = cms.InputTag("simpleSecondaryVertexBJetTags"), workingPoint = cms.double(2.05))
-                               )
-    )
+      jetBTaggers  = cms.PSet(
+        trackCountingEff = cms.PSet(
+          label = cms.InputTag("trackCountingHighEffBJetTags" ),
+          workingPoint = cms.double(1.25)
+        ),
+        trackCountingPur = cms.PSet(
+          label = cms.InputTag("trackCountingHighPurBJetTags" ),
+          workingPoint = cms.double(3.00)
+        ),
+        secondaryVertex  = cms.PSet(
+          label = cms.InputTag("simpleSecondaryVertexBJetTags"),
+          workingPoint = cms.double(2.05)
+        )
+      )
+    ),
+    ## [optional] : when omitted no mass window will be applied
+    ## for the same flavor lepton monitoring plots 
+    massExtras = cms.PSet(
+      lowerEdge = cms.double( 70.),
+      upperEdge = cms.double(110.)
+    ),
+    ## [optional] : when omitted all monitoring plots for triggering
+    ## will be empty
+    triggerExtras = cms.PSet(
+      src   = cms.InputTag("TriggerResults","","HLT"),
+      paths = cms.vstring(['HLT_Ele15_SW_L1R:HLT_QuadJet30'])                                                   
+    )    
   ),
                                   
   ## ------------------------------------------------------
@@ -217,13 +312,13 @@ topElecPlusJetsOfflineDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
     ## [optional] : when omitted no preselection is applied
     trigger = cms.PSet(
       src    = cms.InputTag("TriggerResults","","HLT"),
-      select = cms.vstring(['HLT_Ele15_LW_L1R'])
+      select = cms.vstring(['HLT_Ele15_LW_L1R', 'HLT_QuadJet30'])
     ),
     ## [optional] : when omitted no preselection is applied
-    beamspot = cms.PSet(
-      src    = cms.InputTag("offlineBeamSpot"),
-      select = cms.string('abs(z0)<0.20')
-    )
+    vertex = cms.PSet(
+      src    = cms.InputTag("offlinePrimaryVertices"),
+      select = cms.string('abs(x)<1. & abs(y)<1. & abs(z)<20. & tracksSize>3 & !isFake')
+    )                                              
   ),
   
   ## ------------------------------------------------------    
@@ -246,16 +341,18 @@ topElecPlusJetsOfflineDQM = cms.EDAnalyzer("TopSingleLeptonDQM",
     cms.PSet(
       label  = cms.string("muons:step1"),    
       src    = cms.InputTag("muons"),
-      select = cms.string("pt>30 & abs(eta)<2.1 & (isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.05"),
+      select = cms.string("pt>15 & abs(eta)<2.1 & isGlobalMuon & abs(globalTrack.d0)<1 & abs(globalTrack.dz)<20 &"
+                          "(isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.2"),
       max    = cms.int32(0)
     ),    
     cms.PSet(
       label  = cms.string("elecs:step2"),    
       src    = cms.InputTag("gsfElectrons"),
-      select = cms.string("pt>30 & abs(eta)<2.4 & (dr04TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.1"),
+      select = cms.string("pt>30 & abs(eta)<2.4 & abs(gsfTrack.d0)<1 & abs(gsfTrack.dz)<20 &"
+                          "(dr04TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.1"),
       electronId  = cms.InputTag("eidRobustTight"),
       min    = cms.int32(1),
       max    = cms.int32(1)
     ),
-  ),
+  )
 )

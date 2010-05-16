@@ -9,11 +9,13 @@
 #include "DQMServices/Core/interface/MonitorElement.h"
 
 #include "DataFormats/JetReco/interface/Jet.h"
+#include "DQM/Physics/interface/TopDQMHelpers.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/Common/interface/ValueMap.h"
 #include "DataFormats/METReco/interface/CaloMET.h"
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
+
 
 /**
    \class   MonitorEnsemble TopDQMHelpers.h "DQM/Physics/interface/TopDQMHelpers.h"
@@ -51,16 +53,24 @@ namespace TopSingleLepton {
     void fill(const edm::Event& event, const edm::EventSetup& setup) const;
 
   private:
+    /// deduce monitorPath from label, the label is expected
+    /// to be of type 'selectionPath:monitorPath'
+    std::string monitorPath(const std::string& label) const { return label.substr(label.find(':')+1); };  
+    /// deduce selectionPath from label, the label is 
+    /// expected to be of type 'selectionPath:monitorPath' 
+    std::string selectionPath(const std::string& label) const { return label.substr(0, label.find(':')); };  
+
+    /// set configurable labels for trigger monitoring histograms
+    void triggerBinLabels(std::string channel, const std::vector<std::string> labels);
+    /// fill trigger monitoring histograms
+    void fill(const edm::TriggerResults& triggerTable, std::string channel, const std::vector<std::string> labels) const;
+
     /// check if histogram was booked
     bool booked(const std::string histName) const { return hists_.find(histName.c_str())!=hists_.end(); };
     /// fill histogram if it had been booked before
     void fill(const std::string histName, double value) const { if(booked(histName.c_str())) hists_.find(histName.c_str())->second->Fill(value); };
-    /// fill jet histograms
-    void fill(const edm::View<reco::Jet>& jets, const edm::Event& event, const JetCorrector* corrector) const;
-    /// fill electron histograms
-    void fill(const edm::View<reco::GsfElectron>& elecs, const edm::Event& event) const;
-    /// fill muon histograms
-    void fill(const edm::View<reco::Muon>& muons) const;
+    /// fill histogram if it had been booked before (2-dim version)
+    void fill(const std::string histName, double xValue, double yValue) const { if(booked(histName.c_str())) hists_.find(histName.c_str())->second->Fill(xValue, yValue); };
 
   private:
     /// verbosity level for booking
@@ -73,6 +83,14 @@ namespace TopSingleLepton {
     std::vector<edm::InputTag> mets_;
     /// electronId
     edm::InputTag electronId_;
+    /// extra selection on muons
+    StringCutObjectSelector<reco::Muon>* muonSelect_;
+    /// extra isolation criterion on muon
+    StringCutObjectSelector<reco::Muon>* muonIso_;
+    /// extra selection on electrons
+    StringCutObjectSelector<reco::GsfElectron>* elecSelect_;
+    /// extra isolation criterion on electron
+    StringCutObjectSelector<reco::GsfElectron>* elecIso_;
     /// jetCorrector
     std::string jetCorrector_;
     /// include btag information or not
@@ -82,12 +100,42 @@ namespace TopSingleLepton {
     edm::InputTag btagEff_, btagPur_, btagVtx_;
     /// btag working points
     double btagEffWP_, btagPurWP_, btagVtxWP_;
+    /// trigger table
+    edm::InputTag triggerTable_;
+    /// trigger paths for monitoring, expected 
+    /// to be of form signalPath:MonitorPath
+    std::vector<std::string> triggerPaths_;
+    /// mass window upper and lower edge
+    double lowerEdge_, upperEdge_;
 
     /// storage manager
     DQMStore* store_;
     /// histogram container  
     std::map<std::string,MonitorElement*> hists_;
   };
+
+  inline void 
+  MonitorEnsemble::triggerBinLabels(std::string channel, const std::vector<std::string> labels)
+  {
+    for(unsigned int idx=0; idx<labels.size(); ++idx){
+      hists_[(channel+"Mon_").c_str()]->setBinLabel( idx+1, "["+monitorPath(labels[idx])+"]", 1);
+      hists_[(channel+"Eff_").c_str()]->setBinLabel( idx+1, "["+selectionPath(labels[idx])+"]|["+monitorPath(labels[idx])+"]", 1);
+    }
+  }
+
+  inline void 
+  MonitorEnsemble::fill(const edm::TriggerResults& triggerTable, std::string channel, const std::vector<std::string> labels) const
+  {
+    for(unsigned int idx=0; idx<labels.size(); ++idx){
+      if( accept(triggerTable, monitorPath(labels[idx])) ){
+	fill((channel+"Mon_").c_str(), idx+0.5 );
+	// take care to fill triggerMon_ before evts is being called
+	int evts = hists_.find((channel+"Mon_").c_str())->second->getBinContent(idx+1);
+	double value = hists_.find((channel+"Eff_").c_str())->second->getBinContent(idx+1);
+	fill((channel+"Eff_").c_str(), idx+0.5, 1./evts*(accept(triggerTable, selectionPath(labels[idx]))-value));
+      }
+    }
+  }
 
 }
 
@@ -101,6 +149,7 @@ namespace TopSingleLepton {
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "FWCore/Framework/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
   
@@ -155,6 +204,10 @@ class TopSingleLeptonDQM : public edm::EDAnalyzer  {
   edm::InputTag triggerTable_;
   /// trigger paths
   std::vector<std::string> triggerPaths_;
+  /// primary vertex 
+  edm::InputTag vertex_;
+  /// string cut selector
+  StringCutObjectSelector<reco::Vertex>* vertexSelect_;
   /// beamspot 
   edm::InputTag beamspot_;
   /// string cut selector
