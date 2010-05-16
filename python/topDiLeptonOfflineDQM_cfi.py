@@ -28,14 +28,14 @@ topDiLeptonOfflineDQM = cms.EDAnalyzer("TopDiLeptonOfflineDQM",
     ## [optional] : when omitted all monitoring plots for the electron
     ## will be filled w/o preselection
     elecExtras = cms.PSet(
-      select = cms.string("pt>10 && abs(eta)<2.4 && abs(gsfTrack.d0)<1 && abs(gsfTrack.dz)<20"),
+      select = cms.string("pt>5 && abs(eta)<2.4 && abs(gsfTrack.d0)<1 && abs(gsfTrack.dz)<20"),
       isolation = cms.string("(dr03TkSumPt+dr04EcalRecHitSumEt+dr04HcalTowerSumEt)/pt<0.2"),
       electronId = cms.InputTag("eidRobustTight") ## used eidLoose
     ),
     ## [optional] : when omitted all monitoring plots for the muon
     ## will be filled w/o preselection
     muonExtras = cms.PSet(
-      select = cms.string("pt>5 && abs(eta)<2.4 && abs(globalTrack.d0)<1 && abs(globalTrack.dz)<20"),
+      select = cms.string("pt>1 && abs(eta)<2.4 && abs(globalTrack.d0)<1 && abs(globalTrack.dz)<20"),
       isolation = cms.string("(isolationR03.sumPt+isolationR03.emEt+isolationR03.hadEt)/pt<0.2"),
     ),
     ## [optional] : when omitted no mass window will be applied
