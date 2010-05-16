@@ -69,15 +69,15 @@ class Calculate {
   ~Calculate(){};
      
   /// calculate W boson mass estimate
-  double massWBoson(const edm::View<reco::Jet>& jets);
+    double massWBoson(const std::vector<reco::Jet>& jets);
   /// calculate W boson mass estimate
-  double massTopQuark(const edm::View<reco::Jet>& jets); 
+      double massTopQuark(const std::vector<reco::Jet>& jets); 
   
  private:
   /// do the calculation; this is called only once per event by the first 
   /// function call to return a mass estimate. The once calculated values 
   /// are cached afterwards
-  void operator()(const edm::View<reco::Jet>& jets);
+   void operator()(const std::vector<reco::Jet>& jets);
 
  private:
   /// indicate failed associations
