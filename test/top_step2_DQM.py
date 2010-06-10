@@ -20,7 +20,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.EventContent.EventContent_cff')
 
 process.configurationMetadata = cms.untracked.PSet(
-    version = cms.untracked.string('$Revision: 1.169 $'),
+    version = cms.untracked.string('$Revision: 1.1 $'),
     annotation = cms.untracked.string('step2 nevts:3'),
     name = cms.untracked.string('PyReleaseValidation')
 )
@@ -98,7 +98,7 @@ process.MessageLogger.cerr.TopDiLeptonOfflineDQM = cms.untracked.PSet(limit = cm
 
 # Other statements
 #process.GlobalTag.globaltag = 'GR10_P_V5::All'
-process.GlobalTag.globaltag = 'GLOBALTAG::All'
+process.GlobalTag.globaltag = 'GR10_P_V5::All'
 
 # Path and EndPath definitions
 process.reconstruction_step = cms.Path(process.reconstruction)
