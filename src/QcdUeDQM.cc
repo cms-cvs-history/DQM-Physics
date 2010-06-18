@@ -210,25 +210,31 @@ void QcdUeDQM::beginRun(const Run &run, const EventSetup &iSetup)
   
 
 
-  bool isinit = false;
-  string teststr;
-  for(size_t i=0; i<hltProcNames_.size(); ++i) {
-    if (i>0) 
-      teststr += ", ";
-    teststr += hltProcNames_.at(i);
-    if (hltConfig.init(hltProcNames_.at(i))) {
-      isinit = true;
-      hltUsedResName_ = hltResName_;
-      if (hltResName_.find(':')==string::npos)
-        hltUsedResName_ += "::";
-      else 
-        hltUsedResName_ += ":";
-      hltUsedResName_ += hltProcNames_.at(i);
-      break;
-    }
-  }
 
-  if (!isinit)return;
+
+ // indicating change of HLT cfg at run boundries
+ // for HLTConfigProvider::init()
+ bool isHltCfgChange = false; // currently unused
+
+ bool isinit = false;
+ string teststr;
+ for(size_t i=0; i<hltProcNames_.size(); ++i) {
+   if (i>0) 
+     teststr += ", ";
+   teststr += hltProcNames_.at(i);
+   if ( hltConfig.init( run, iSetup, hltProcNames_.at(i), isHltCfgChange ) ) {
+     isinit = true;
+     hltUsedResName_ = hltResName_;
+     if (hltResName_.find(':')==string::npos)
+       hltUsedResName_ += "::";
+     else 
+       hltUsedResName_ += ":";
+     hltUsedResName_ += hltProcNames_.at(i);
+     break;
+   }
+ }
+ 
+ if (!isinit)return;
 
   // setup "Any" bit
   hltTrgBits_.clear();
@@ -277,8 +283,11 @@ void QcdUeDQM::book1D(std::vector<MonitorElement*> &mes,
                                         Form("%s: %s",hltTrgUsedNames_.at(i).c_str(), title.c_str()), 
                                         nx, x1, x2);
     TH1 *h1 = e->getTH1();
-    if (sumw2)
-      h1->Sumw2();
+    if (sumw2) {
+      if( h1->GetSumw2N() ) { // protect against re-summing (would cause exception)
+	h1->Sumw2();
+      }
+    }
     h1->SetStats(sbox);
     mes.push_back(e);
   }
@@ -299,8 +308,11 @@ void QcdUeDQM::book2D(std::vector<MonitorElement*> &mes,
                                         Form("%s: %s",hltTrgUsedNames_.at(i).c_str(), title.c_str()), 
                                         nx, x1, x2, ny, y1, y2);
     TH1 *h1 = e->getTH1();
-    if (sumw2)
-      h1->Sumw2();
+    if (sumw2) {
+      if( h1->GetSumw2N() ) { // protect against re-summing (would cause exception)
+	h1->Sumw2();
+      }
+    }
     h1->SetStats(sbox);
     mes.push_back(e);
   }
