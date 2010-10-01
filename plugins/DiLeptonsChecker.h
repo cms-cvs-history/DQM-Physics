@@ -17,7 +17,8 @@
 //needed for MessageLogger
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 //DataFormat
-#include "FWCore/Framework/interface/TriggerNames.h"
+//#include "FWCore/Framework/interface/TriggerNames.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "RecoEgamma/Examples/plugins/ElectronIDAnalyzer.h"
 #include "DataFormats/Common/interface/ValueMap.h"

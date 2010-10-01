@@ -15,8 +15,12 @@
 //needed for MessageLogger
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 //DataFormat
-#include "FWCore/Framework/interface/TriggerNames.h"
+//#include "FWCore/Framework/interface/TriggerNames.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
+//jetMET
+#include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 //user files
 #include "DQM/Physics/interface/Selection.h"
 #include "DQM/Physics/interface/MuonChecker.h"

@@ -4,6 +4,7 @@
 #include "DataFormats/BTauReco/interface/JetTag.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 
 JetChecker::JetChecker(const edm::ParameterSet& iConfig, const std::string& relativePath, const std::string& label )
 {
@@ -51,7 +52,8 @@ JetChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, const e
   double corrJES = 1;
   for( unsigned int i=0;i<jets.size();i++) { 
     if(useJES){
-     corrJES = corrector->correction((jets)[i], iEvent, iSetup);
+     //corrJES = corrector->correction((jets)[i], iEvent, iSetup);
+     corrJES = corrector->correction((jets)[i]);
     }
 
     edm::LogInfo("Debug|JetChecker") << "looping over jets, now at jet " << i << " pT:" << (jets)[i].pt() << ", eta:" << (jets)[i].eta() << std::endl;
@@ -79,26 +81,26 @@ JetChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, const e
      double diff =  jettowers.size() - (jets)[i].n90();
      hists_["Jetn90vsE-n90"]->Fill((jets)[i].n90(), diff  );
 
-     hists_["JEC_et"]->Fill(jets.at(i).et()*(corrector->correction(jets.at(i), iEvent, iSetup)));
-     hists_["JEC_pt"]->Fill(jets.at(i).pt()*(corrector->correction(jets.at(i), iEvent, iSetup)));
-     hists_["JEC_energy"]->Fill(jets.at(i).energy()*(corrector->correction(jets.at(i), iEvent, iSetup)));
+     hists_["JEC_et"]->Fill(jets.at(i).et()*(corrector->correction(jets.at(i))));
+     hists_["JEC_pt"]->Fill(jets.at(i).pt()*(corrector->correction(jets.at(i))));
+     hists_["JEC_energy"]->Fill(jets.at(i).energy()*(corrector->correction(jets.at(i))));
   }
   
   //Fill October exercise quantities:
   if (jets.size() > 0) {
-    hists_["ptHighest_pt"]->Fill(jets.at(0).pt()*((useJES) ? corrector->correction(jets.at(0), iEvent, iSetup) : 1.));
+    hists_["ptHighest_pt"]->Fill(jets.at(0).pt()*((useJES) ? corrector->correction(jets.at(0)) : 1.));
     hists_["ptHighest_eta"]->Fill(jets.at(0).eta());
   }
   if (jets.size() > 1) {
-    hists_["ptSecond_pt"]->Fill(jets.at(1).pt()*((useJES) ? corrector->correction(jets.at(1), iEvent, iSetup) : 1.));
+    hists_["ptSecond_pt"]->Fill(jets.at(1).pt()*((useJES) ? corrector->correction(jets.at(1)) : 1.));
     hists_["ptSecond_eta"]->Fill(jets.at(1).eta());
   }
   if (jets.size() > 2) {
-    hists_["ptThird_pt"]->Fill(jets.at(2).pt()*((useJES) ? corrector->correction(jets.at(2), iEvent, iSetup) : 1.));
+    hists_["ptThird_pt"]->Fill(jets.at(2).pt()*((useJES) ? corrector->correction(jets.at(2)) : 1.));
     hists_["ptThird_eta"]->Fill(jets.at(2).eta());
   }
   if (jets.size() > 3) {
-    hists_["ptFourth_pt"]->Fill(jets.at(3).pt()*((useJES) ? corrector->correction(jets.at(3), iEvent, iSetup) : 1.));
+    hists_["ptFourth_pt"]->Fill(jets.at(3).pt()*((useJES) ? corrector->correction(jets.at(3)) : 1.));
     hists_["ptFourth_eta"]->Fill(jets.at(3).eta());
   }
   

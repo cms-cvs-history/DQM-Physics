@@ -592,8 +592,8 @@ void Selection::SelectJets(const edm::Event& iEvent, const edm::EventSetup& iSet
         }
     }
     
-    double corrJES = acorrector->correction((tmpjets)[i], iEvent, iSetup);
-    
+    double corrJES = acorrector->correction((tmpjets)[i]);
+    //double corrJES = 1.0;
     
     if (fabs(tmpjets[i].eta())<JetEtaThreshold_ && tmpjets[i].pt()*corrJES>JetPtThreshold_ && tmpjets[i].energyFractionHadronic()>=JetEHThreshold_ && passDeltaRCut) {
     	jets.push_back(tmpjets[i]);
@@ -621,7 +621,9 @@ void Selection::SelectJets(float PtThr, float EtaThr, float EHThr, const edm::Ev
     }
     
     
-    double corrJES = acorrector->correction((tmpjets)[i], iEvent, iSetup);
+    double corrJES = acorrector->correction((tmpjets)[i]);
+    //double corrJES = 1.0;
+    
     if (fabs(tmpjets[i].eta())<EtaThr && tmpjets[i].pt()*corrJES>PtThr && tmpjets[i].energyFractionHadronic()>=EHThr && passDeltaRCut) {
     	jets.push_back(tmpjets[i]);
     }

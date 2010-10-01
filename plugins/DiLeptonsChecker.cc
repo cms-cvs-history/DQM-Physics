@@ -238,12 +238,18 @@ DiLeptonsChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   
   //trigger selection
   bool triggered = false;
-  edm::TriggerNames triggerNames_;
-  triggerNames_.init(*trigResults);
+  //edm::TriggerNames triggerNames_;
+
+  edm::InputTag triggerTable_ = labelTriggerResults_;
+  edm::Handle<edm::TriggerResults> triggerTable;
+  //edm::TriggerResults triggerTable;
+  if(!triggerTable_.label().empty()) iEvent.getByLabel(triggerTable_, triggerTable);
+  const edm::TriggerNames& triggerNames_ = iEvent.triggerNames(*triggerTable);
+  //  triggerNames_.init(*trigResults);
   for(unsigned int i=0; i<triggerNames_.triggerNames().size();i++){
     for(unsigned int j=0; j<triggerPath_.size(); j++){
       if(triggerNames_.triggerNames()[i] == triggerPath_[j]) {
-	if(trigResults->accept(i)){
+	if(triggerTable->accept(i)){
 	  triggered = true;
 	  break;
 	}

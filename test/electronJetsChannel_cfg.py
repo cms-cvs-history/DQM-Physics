@@ -1,30 +1,39 @@
 from DQM.Physics.validationTemplate_cfg import *
 
 ## add jet corrections
-process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer09_cff")
-process.prefer("L2L3JetCorrectorAK5Calo")
+#process.load("JetMETCorrections.Configuration.L2L3Corrections_Summer09_cff")
+process.load("JetMETCorrections.Configuration.JetCorrectionServicesAllAlgos_cff")
+process.prefer("ak5CaloL2L3")
+
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+process.GlobalTag.globaltag = cms.string('START38_V8::All') 
 
 ## define process
 process.load("DQM.Physics.leptonJetsChecker_cfi")
 
 # MET correction for Muons
-from JetMETCorrections.Type1MET.MuonMETValueMapProducer_cff import *
-from JetMETCorrections.Type1MET.MetMuonCorrections_cff import *
-from JetMETCorrections.Type1MET.MetType1Corrections_cff import *
+#from JetMETCorrections.Type1MET.MuonMETValueMapProducer_cff import *
+#from JetMETCorrections.Type1MET.MetMuonCorrections_cff import *
+#from JetMETCorrections.Type1MET.MetType1Corrections_cff import *
 
-process.load("JetMETCorrections.Type1MET.MetType1Corrections_cff")
-process.load("JetMETCorrections.Type1MET.MetMuonCorrections_cff")
+#process.load("JetMETCorrections.Type1MET.MetType1Corrections_cff")
+#process.load("JetMETCorrections.Type1MET.MetMuonCorrections_cff")
+
+
 
 #process.metJESCorAK5CaloJet  = metJESCorIC5CaloJet.clone()
 #process.metJESCorAK5CaloJet.inputUncorJetsLabel = "antikt5CaloJets"
 #process.metJESCorAK5CaloJet.inputUncorMetLabel  = "corMetGlobalMuons"
 #process.metJESCorAK5CaloJet.corrector = "L2L3JetCorrectorAK5Calo"
 
-process.leptonJetsChecker.labelMETs = cms.InputTag('metJESCorAK5CaloJet')
+#process.leptonJetsChecker.labelMETs = cms.InputTag('metJESCorAK5CaloJet')
+process.leptonJetsChecker.labelMETs = cms.InputTag('met')
 
 ## configure semi-leptonic channel (electron)
-process.leptonJetsChecker.PerformOctoberXDeltaRStep   =               True
-process.leptonJetsChecker.Luminosity                  =                 20
+process.leptonJetsChecker.outputFileName              = 'TopMCValidation_something.root'
+process.leptonJetsChecker.PerformOctoberXDeltaRStep   =              False
+process.leptonJetsChecker.Luminosity                  =                  1
+process.leptonJetsChecker.Xsection                    =                  1
 process.leptonJetsChecker.MuonRelIso                  =               0.05
 process.leptonJetsChecker.leptonType                  =         'electron'
 process.leptonJetsChecker.useElectronID               =               True
@@ -33,7 +42,8 @@ process.leptonJetsChecker.JetDeltaRLeptonJetThreshold =                0.3
 process.leptonJetsChecker.applyLeptonJetDeltaRCut     =               True
 process.leptonJetsChecker.ApplyMETCut                 =              False
 process.leptonJetsChecker.useTrigger                  =               True
-process.leptonJetsChecker.triggerPath                 = 'HLT_Ele15_LW_L1R' 
+#process.leptonJetsChecker.triggerPath                 = 'HLT_Ele15_LW_L1R' 
+process.leptonJetsChecker.triggerPath                 = 'HLT_Photon20_Cleaned_L1R'
 process.leptonJetsChecker.PtThrElectrons              =               30.0
 process.leptonJetsChecker.vetoEBEETransitionRegion    =               True
 process.leptonJetsChecker.VetoLooseLepton             =              False
@@ -62,8 +72,8 @@ process.leptonJetsChecker.btaggingSelectors = cms.PSet(
 )
 	
 process.p = cms.Path(
-  corMetGlobalMuons+
-  process.metJESCorAK5CaloJet+
+#  corMetGlobalMuons+
+#  process.metJESCorAK5CaloJet+
   process.leptonJetsChecker
 )
 

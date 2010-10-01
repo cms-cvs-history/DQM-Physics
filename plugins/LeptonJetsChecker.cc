@@ -1,4 +1,5 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "DQM/Physics/plugins/LeptonJetsChecker.h"
 
 LeptonJetsChecker::LeptonJetsChecker(const edm::ParameterSet& iConfig)
@@ -211,8 +212,9 @@ LeptonJetsChecker::~LeptonJetsChecker()
 }
 
 double LeptonJetsChecker::ComputeNbEvent(MonitorElement* h, int bin){
-  if(h->getBinContent(1)>0)return(h->getBinContent(bin+1)*Xsection*Luminosity/(h->getBinContent(1)));
-  else return (0);
+  return h->getBinContent(bin+1);
+  //if(h->getBinContent(1)>0)return(h->getBinContent(bin+1)*Xsection*Luminosity/(h->getBinContent(1)));
+//  else return (0);
 }
 
 void
@@ -243,8 +245,8 @@ LeptonJetsChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   iEvent.getByLabel(labelBeamSpot_, beamSpotHandle);
   reco::BeamSpot beamSpot = * beamSpotHandle;
 
-  edm::Handle<edm::TriggerResults> trigResults;
-  iEvent.getByLabel(labelTriggerResults_,trigResults);
+  //edm::Handle<edm::TriggerResults> trigResults;
+  //iEvent.getByLabel(labelTriggerResults_,trigResults);
 
   ///  Read eID results:
   edm::Handle<edm::ValueMap<float> >  eIDValueMap; 
@@ -259,7 +261,7 @@ LeptonJetsChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   if (!muonsHandle.isValid())     throw cms::Exception("ProductNotFound") << "Muon collection not found"      <<std::endl;
   if (!metsHandle.isValid())      throw cms::Exception("ProductNotFound") << "MET collection not found"       <<std::endl;
   if (!beamSpotHandle.isValid())  throw cms::Exception("ProductNotFound") << "BeamSpot not found"             <<std::endl;
-  if (!trigResults.isValid())     throw cms::Exception("ProductNotFound") << "Trigger results not found"      <<std::endl;
+//  if (!trigResults.isValid())     throw cms::Exception("ProductNotFound") << "Trigger results not found"      <<std::endl;
   if (!eIDValueMap.isValid())     throw cms::Exception("ProductNotFound") << "electronID value map not found" <<std::endl;
   ////////////////////////////////////////
    
@@ -280,7 +282,16 @@ LeptonJetsChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   if (PerformOctoberXDeltaRStep_) {selection->SetJetConfig(JetDeltaRLeptonJetThreshold, false);}
 
   int nJets = selection->GetJets().size(); // number of jets before JES and Selection
-  const JetCorrector *acorrector = JetCorrector::getJetCorrector(jetCorrector_,iSetup);
+  //const JetCorrector *acorrector = JetCorrector::getJetCorrector(jetCorrector_,iSetup);
+  const JetCorrector* acorrector=0;
+    if(!jetCorrector_.empty()){
+      // check whether a jet corrector is in the event setup or not
+      if(iSetup.find( edm::eventsetup::EventSetupRecordKey::makeKey<JetCorrectionsRecord>() )){
+	
+	acorrector = JetCorrector::getJetCorrector(jetCorrector_, iSetup);
+      }
+    }
+  
   selection->SelectJets(iEvent, iSetup, acorrector);
 
   bool selected = selection->isSelected(NofJets, leptonType_, 1, true);
@@ -329,11 +340,18 @@ LeptonJetsChecker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   histocontainer_["Selection_Vs_Multiplicity"]->Fill(nJetBinToFill, 0);
   //trigger
   bool triggered = false;
-  edm::TriggerNames triggerNames_;
-  triggerNames_.init(*trigResults);
+  //edm::TriggerNames triggerNames_;
+  
+  edm::InputTag triggerTable_ = labelTriggerResults_;
+  edm::Handle<edm::TriggerResults> triggerTable;
+  //edm::TriggerResults triggerTable;
+  if(!triggerTable_.label().empty()) iEvent.getByLabel(triggerTable_, triggerTable);
+  const edm::TriggerNames& triggerNames_ = iEvent.triggerNames(*triggerTable);
+  //triggerNames_.init(*trigResults);//does not work in 3_8_X
   for(unsigned int i=0; i<triggerNames_.triggerNames().size();i++){
     if(triggerNames_.triggerNames()[i] == triggerPath) {
-      if(trigResults->accept(i)){
+      //if(trigResults->accept(i)){
+      if(triggerTable->accept(i)){
 	triggered = true;
 	break;
       }

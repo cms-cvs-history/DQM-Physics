@@ -18,7 +18,8 @@
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
-#include "FWCore/Framework/interface/TriggerNames.h"
+//#include "FWCore/Framework/interface/TriggerNames.h"
+#include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/Math/interface/deltaR.h"
 

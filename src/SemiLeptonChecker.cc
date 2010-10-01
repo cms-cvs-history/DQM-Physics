@@ -46,7 +46,7 @@ SemiLeptonChecker::analyze(const std::vector<reco::CaloJet>& jets, bool useJES, 
     TLorentzVector jetP4;
     reco::CaloJet correctedJet = jets[ijet];
     if(useJES){
-      corrJES = acorrector->correction((jets)[ijet], iEvent, iSetup);
+      corrJES = acorrector->correction((jets)[ijet]);
       correctedJet.scaleEnergy(corrJES);
     }
     jetP4.SetPxPyPzE(correctedJet.px(),correctedJet.py(),correctedJet.pz(),correctedJet.energy());
