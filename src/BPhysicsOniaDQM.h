@@ -6,7 +6,7 @@
  *
  *  DQM offline for quarkonia
  *
- *  $Date: 2010/01/04 11:50:29 $
+ *  $Date: 2010/11/08 15:46:05 $
  *  $Revision: 1.4 $
  *  \author S. Bolognesi, Eric - CERN
  */
@@ -15,6 +15,12 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Framework/interface/LuminosityBlock.h"
+#include "DataFormats/Luminosity/interface/LumiSummary.h"
+
+#include <string>
+#include <cmath>
+#include <map>
 
 class DQMStore;
 class MonitorElement;
@@ -24,25 +30,30 @@ class BPhysicsOniaDQM : public edm::EDAnalyzer {
 
   /// Constructor
   BPhysicsOniaDQM(const edm::ParameterSet&);
-  
+
   /// Destructor
   virtual ~BPhysicsOniaDQM();
-  
+
   /// Inizialize parameters for histo binning
   void beginJob();
 
   /// Get the analysis
   void analyze(const edm::Event&, const edm::EventSetup&);
-
-  /// Save the histos
+  void beginLuminosityBlock(const edm::LuminosityBlock &lumiBlock, const edm::EventSetup &iSetup);
+  void endLuminosityBlock(const edm::LuminosityBlock &lumiBlock, const edm::EventSetup &iSetup);
+  void beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup);
+  void endRun(const edm::Run& iRun, const edm::EventSetup& iSetup);
   void endJob(void);
 
  private:
 
   float computeMass(const math::XYZVector &vec1,const math::XYZVector &vec2);
+  bool isMuonInAccept(const reco::Muon &recoMu);
+  bool selGlobalMuon(const reco::Muon &recoMu);
+  bool selTrackerMuon(const reco::Muon &recoMu);
 
   // ----------member data ---------------------------
-  
+
   DQMStore* theDbe;
   // Switch for verbosity
   std::string metname;
@@ -57,5 +68,29 @@ class BPhysicsOniaDQM : public edm::EDAnalyzer {
   MonitorElement* global_background;
   MonitorElement* tracker_background;
   MonitorElement* standalone_background;
+
+  MonitorElement* glbSigCut;
+  MonitorElement* glbSigNoCut;
+  MonitorElement* glbBkgNoCut;
+  MonitorElement* staSigCut;
+  MonitorElement* staSigNoCut;
+  MonitorElement* staBkgNoCut;
+  MonitorElement* trkSigCut;
+  MonitorElement* trkSigNoCut;
+  MonitorElement* trkBkgNoCut;
+
+  MonitorElement* JPsiGlbYdLumi;
+  MonitorElement* JPsiStaYdLumi;
+  MonitorElement* JPsiTrkYdLumi;
+
+  //Yield of dimuon objects
+  int jpsiGlbSigPerLS;
+  int jpsiStaSigPerLS;
+  int jpsiTrkSigPerLS;
+  std::map<int,int> jpsiGlbSig;
+  std::map<int,int> jpsiStaSig;
+  std::map<int,int> jpsiTrkSig;
+
+  math::XYZPoint RefVtx;
 };
-#endif  
+#endif
