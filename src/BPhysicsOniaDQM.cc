@@ -1,8 +1,8 @@
 /*
  *  See header file for a description of this class.
  *
- *  $Date: 2010/11/08 15:46:05 $
- *  $Revision: 1.4 $
+ *  $Date: 2010/11/08 18:10:20 $
+ *  $Revision: 1.5 $
  *  \author S. Bolognesi, Erik - CERN
  */
 
@@ -33,6 +33,7 @@ using namespace reco;
 BPhysicsOniaDQM::BPhysicsOniaDQM(const ParameterSet& parameters) {
   // Muon Collection Label
   theMuonCollectionLabel = parameters.getParameter<InputTag>("MuonCollection");
+  vertex = parameters.getParameter<InputTag>("vertex");
 
   global_background = NULL;
   diMuonMass_global = NULL;
@@ -97,7 +98,7 @@ void BPhysicsOniaDQM::analyze(const Event& iEvent, const EventSetup& iSetup) {
   iEvent.getByLabel(theMuonCollectionLabel,muons);
 
   Handle<reco::VertexCollection> privtxs;
-  iEvent.getByLabel("offlinePrimaryVertices",privtxs);
+  iEvent.getByLabel(vertex,privtxs);
   VertexCollection::const_iterator privtx;
 
   if(privtxs->begin() != privtxs->end()){
@@ -355,3 +356,4 @@ bool BPhysicsOniaDQM::selTrackerMuon(const reco::Muon &recoMu)
           fabs(iTrack->dxy(RefVtx)) < 3.0 &&
           fabs(iTrack->dz(RefVtx)) < 15.0 );
 }
+

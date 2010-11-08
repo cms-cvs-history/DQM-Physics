@@ -6,8 +6,8 @@
  *
  *  DQM offline for quarkonia
  *
- *  $Date: 2010/11/08 15:46:05 $
- *  $Revision: 1.4 $
+ *  $Date: 2010/11/08 18:10:24 $
+ *  $Revision: 1.5 $
  *  \author S. Bolognesi, Eric - CERN
  */
 
@@ -55,6 +55,8 @@ class BPhysicsOniaDQM : public edm::EDAnalyzer {
   // ----------member data ---------------------------
 
   DQMStore* theDbe;
+  
+  edm::InputTag vertex;
   // Switch for verbosity
   std::string metname;
 
@@ -94,3 +96,4 @@ class BPhysicsOniaDQM : public edm::EDAnalyzer {
   math::XYZPoint RefVtx;
 };
 #endif
+
