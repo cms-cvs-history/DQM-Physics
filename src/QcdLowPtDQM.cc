@@ -1,4 +1,4 @@
-// $Id: QcdLowPtDQM.cc,v 1.13 2009/11/30 11:14:25 loizides Exp $
+// $Id: QcdLowPtDQM.cc,v 1.15 2010/11/11 17:27:32 olzem Exp $
 
 #include "DQM/Physics/src/QcdLowPtDQM.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
@@ -22,7 +22,6 @@
 #include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetType.h"
 #include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-#include "Geometry/TrackerTopology/interface/RectangularPixelTopology.h" 
 #include <TString.h>
 #include <TMath.h>
 #include <TH1F.h>
@@ -784,7 +783,7 @@ void QcdLowPtDQM::fillHltBits(const Event &iEvent)
                           (int)hltTrgDeci_.at(i), hltTrgUsedNames_.at(i).c_str()));
     } else {
       print(2,Form("Problem slot %i for bit %i for %s",
-                   i, tbit, triggerResultsHLT->size(), hltTrgUsedNames_.at(i).c_str()));
+                   i, tbit, hltTrgUsedNames_.at(i).c_str()));
     }
   }
 
@@ -835,8 +834,7 @@ void QcdLowPtDQM::fillPixels(const Event &iEvent)
     const PixelGeomDetUnit *pgdu = static_cast<const PixelGeomDetUnit*>(tgeo_->idToDet(id));
 
     if (usePixelQ_) {
-      const RectangularPixelTopology *pixTopo = 
-        static_cast<const RectangularPixelTopology*>(&(pgdu->specificTopology()));
+      const PixelTopology *pixTopo = &(pgdu->specificTopology());
       vector<SiPixelCluster::Pixel> pixels(hit->cluster()->pixels());
       bool pixelOnEdge = false;
       for(std::vector<SiPixelCluster::Pixel>::const_iterator pixel = pixels.begin(); 
