@@ -1,4 +1,4 @@
-// $Id: QcdLowPtDQM.cc,v 1.13 2009/11/30 11:14:25 loizides Exp $
+// $Id: QcdLowPtDQM.cc,v 1.16 2010/12/14 15:57:39 olzem Exp $
 
 #include "DQM/Physics/src/QcdLowPtDQM.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
@@ -22,7 +22,6 @@
 #include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetType.h"
 #include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-#include "Geometry/TrackerTopology/interface/RectangularPixelTopology.h" 
 #include <TString.h>
 #include <TMath.h>
 #include <TH1F.h>
@@ -194,7 +193,7 @@ void QcdLowPtDQM::beginRun(const Run &run, const EventSetup &iSetup)
         hltTrgUsedNames_.push_back(n1);
         hltTrgDeci_.push_back(false);
         print(0,Form("Added trigger %d with name %s for bit %d", 
-                     hltTrgBits_.size()-1, n1.c_str(), j));
+                     int(hltTrgBits_.size()-1), n1.c_str(), int(j)));
         found = 1;
         break;
       }
@@ -207,10 +206,10 @@ void QcdLowPtDQM::beginRun(const Run &run, const EventSetup &iSetup)
   // ensure that trigger collections are of same size
   if (hltTrgBits_.size()!=hltTrgUsedNames_.size())
     print(3,Form("Size of trigger bits not equal used names: %d %d",
-                 hltTrgBits_.size(), hltTrgUsedNames_.size()));
+                 int(hltTrgBits_.size()), int(hltTrgUsedNames_.size())));
   if (hltTrgDeci_.size()!=hltTrgUsedNames_.size())
     print(3,Form("Size of decision bits not equal names: %d %d",
-                 hltTrgDeci_.size(), hltTrgUsedNames_.size()));
+                 int(hltTrgDeci_.size()), int(hltTrgUsedNames_.size())));
 
   // setup correction histograms
   if (AlphaTracklets12_) {
@@ -784,7 +783,7 @@ void QcdLowPtDQM::fillHltBits(const Event &iEvent)
                           (int)hltTrgDeci_.at(i), hltTrgUsedNames_.at(i).c_str()));
     } else {
       print(2,Form("Problem slot %i for bit %i for %s",
-                   i, tbit, triggerResultsHLT->size(), hltTrgUsedNames_.at(i).c_str()));
+                   int(i), int(tbit), hltTrgUsedNames_.at(i).c_str()));
     }
   }
 
@@ -835,8 +834,7 @@ void QcdLowPtDQM::fillPixels(const Event &iEvent)
     const PixelGeomDetUnit *pgdu = static_cast<const PixelGeomDetUnit*>(tgeo_->idToDet(id));
 
     if (usePixelQ_) {
-      const RectangularPixelTopology *pixTopo = 
-        static_cast<const RectangularPixelTopology*>(&(pgdu->specificTopology()));
+      const PixelTopology *pixTopo = &(pgdu->specificTopology());
       vector<SiPixelCluster::Pixel> pixels(hit->cluster()->pixels());
       bool pixelOnEdge = false;
       for(std::vector<SiPixelCluster::Pixel>::const_iterator pixel = pixels.begin(); 
