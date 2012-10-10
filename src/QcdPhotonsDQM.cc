@@ -1,8 +1,8 @@
 /*
  *  See header file for a description of this class.
  *
- *  $Date: 2012/01/11 13:53:29 $
- *  $Revision: 1.29 $
+ *  $Date: 2012/08/24 15:34:32 $
+ *  $Revision: 1.31 $
  *  \author Michael B. Anderson, University of Wisconsin Madison
  */
 
@@ -76,6 +76,8 @@ QcdPhotonsDQM::QcdPhotonsDQM(const ParameterSet& parameters) {
   thePlotPhotonMaxEt_          = parameters.getParameter<double>("plotPhotonMaxEt");
   thePlotPhotonMaxEta_         = parameters.getParameter<double>("plotPhotonMaxEta");
   thePlotJetMaxEta_            = parameters.getParameter<double>("plotJetMaxEta");
+  theBarrelRecHitTag           = parameters.getParameter<InputTag>("barrelRecHitTag");
+  theEndcapRecHitTag           = parameters.getParameter<InputTag>("endcapRecHitTag");
   // just to initialize
   isValidHltConfig_ = false;
 
@@ -306,11 +308,11 @@ void QcdPhotonsDQM::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
   // For finding spikes
   Handle<EcalRecHitCollection> EBReducedRecHits;
-  iEvent.getByLabel("reducedEcalRecHitsEB", EBReducedRecHits);
+  iEvent.getByLabel(theBarrelRecHitTag, EBReducedRecHits);
   Handle<EcalRecHitCollection> EEReducedRecHits;
-  iEvent.getByLabel("reducedEcalRecHitsEE", EEReducedRecHits); 
-  EcalClusterLazyTools lazyTool(iEvent, iSetup, InputTag("reducedEcalRecHitsEB"), InputTag("reducedEcalRecHitsEE") );
-  
+  iEvent.getByLabel(theEndcapRecHitTag, EEReducedRecHits); 
+  EcalClusterLazyTools lazyTool(iEvent, iSetup, theBarrelRecHitTag, theEndcapRecHitTag);
+
 
   // Find the highest et "decent" photon
   float photon_et  = -9.0;
@@ -326,6 +328,7 @@ void QcdPhotonsDQM::analyze(const Event& iEvent, const EventSetup& iSetup) {
     // stop looping over photons once we get to too low Et
     if ( recoPhoton->et() < theMinPhotonEt_ ) break;
 
+    /*
     //  Ignore ECAL Spikes
     const reco::CaloClusterPtr  seed = recoPhoton->superCluster()->seed();
     DetId id = lazyTool.getMaximum(*seed).first; // Cluster shape variables
@@ -346,6 +349,7 @@ void QcdPhotonsDQM::analyze(const Event& iEvent, const EventSetup& iSetup) {
     bool isNotSpike = ((recoPhoton->isEB() && (severity!=3 && severity!=4 ) && (flags != 2) ) || recoPhoton->isEE());
     if (!isNotSpike) continue;  // move on to next photon
     // END of determining ECAL Spikes
+    */
 
     bool pho_current_passPhotonID = false;
     bool pho_current_isEB = recoPhoton->isEB();
